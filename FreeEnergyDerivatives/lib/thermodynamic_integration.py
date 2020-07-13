@@ -41,7 +41,7 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
                 forces = state_deriv.getForces(asNumpy=True).value_in_unit_system(unit.md_unit_system)[solute_indexes, :]
                 sample_forces[idx, iteration, :, :] = forces
                 
-                t.append(state_deriv.getPotentialEnergy()._vale)
+                t.append(state_deriv.getPotentialEnergy()._value)
         
         if (debug):
             print ("%5.2f %5.2f %8.5f" % 
