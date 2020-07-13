@@ -358,7 +358,7 @@ def _add_alchemical_response(system, solute_indicies, annihilate_sterics=False, 
     
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
-        force.setForceGroup(1)
+        force.setForceGroup(2)
         
     for force in all_electrostatics_custom_nonbonded_forces:
         force.addPerParticleParameter("charge")
@@ -368,19 +368,19 @@ def _add_alchemical_response(system, solute_indicies, annihilate_sterics=False, 
         force.setUseLongRangeCorrection(False)  
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
-        force.setForceGroup(2)
+        force.setForceGroup(1)
     
     for force in all_sterics_custom_bond_forces:
         force.addPerBondParameter("sigma")  
         force.addPerBondParameter("epsilon")
         
-        force.setForceGroup(1)
+        force.setForceGroup(2)
     
     for force in all_electrostatics_custom_bond_forces:
         force.addPerBondParameter("chargeprod")  # charge product
         # force.addPerBondParameter("sigma") 
         
-        force.setForceGroup(2)
+        force.setForceGroup(1)
     
     # add all particles to all custom forces...
     for particle_index in range(reference_force.getNumParticles()):
@@ -425,8 +425,6 @@ def _add_alchemical_response(system, solute_indicies, annihilate_sterics=False, 
             if is_exception_chargeprod:
                 aa_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
 
-        # When this is a single region we model the exception between alchemical
-        # and non-alchemical particles using a single custom bond.
         elif only_one_alchemical:
             if is_exception_epsilon:
                 na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
