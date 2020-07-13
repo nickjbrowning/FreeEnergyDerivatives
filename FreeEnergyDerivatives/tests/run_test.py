@@ -10,13 +10,13 @@ from time import time
 
 from openforcefield.topology import Molecule, Topology
 from openmmforcefields.generators import SystemGenerator
-import solvation_potentials as sp
+from openmmtools.forces import find_forces
+from openmmtools.constants import ONE_4PI_EPS0
+import copy
+from openmmtools import forcefactories
+from openmmtools import forces
 
-platform = openmm.Platform.getPlatformByName('CUDA')
-platform.setPropertyDefaultValue('Precision', 'mixed')
-
-timestep_ps = 0.001
-total_simulation_time = 1000  # 1 ns in units of 0.001 ps
+from openmmtools.alchemy import  *
 
 
 def collect_solute_indexes(topology):
@@ -27,6 +27,10 @@ def collect_solute_indexes(topology):
             for atom in res.atoms():
                 soluteIndices.append(atom.index)
     return soluteIndices
+
+
+platform = openmm.Platform.getPlatformByName('OpenCL')
+platform.setPropertyDefaultValue('Precision', 'mixed')
 
 '''
 ---SYSTEM PREPARATION---
@@ -46,64 +50,36 @@ ligand_pdb = PDBFile('ethanol.pdb')
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=10.0 * unit.angstroms)
+modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
 system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
         nonbondedCutoff=9.0 * unit.angstroms, constraints=HBonds, switchDistance=7.5 * unit.angstroms)
 
 solute_indexes = collect_solute_indexes(modeller.topology)
 
-system = sp.create_alchemical_system(system, solute_indexes)
-
-for idx in solute_indexes:
-   system.setParticleMass(idx, 0.0)
+alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0)
 
 '''
 ---FINISHED SYSTEM PREPARATION---
 '''
     
-# system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
-# integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, timestep_ps * unit.picoseconds)
-# integrator.setConstraintTolerance(1.0E-08)
+alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
+integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+# integrator.setIntegrationForceGroups(set([0]))
 
-integrator = VerletIntegrator(timestep_ps * unit.picoseconds)
-
-simulation = app.Simulation(modeller.topology, system, integrator)
+simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
 simulation.context.setPositions(modeller.positions)
-simulation.context.setVelocitiesToTemperature(298.15 * unit.kelvin)
 
 simulation.minimizeEnergy()
 
 state = simulation.context.getState(getPositions=True)
 PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb", "w"))
 
-energies = []
-temperature = []
+simulation.reporters.append(StateDataReporter('data.txt', 100, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
+simulation.reporters.append(NetCDFReporter('output.nc', 100))
+
 start = time()
-
-for iteration in range(np.int(total_simulation_time / (timestep_ps * 500))):
-    integrator.step(500)  
-    
-    state = simulation.context.getState(getEnergy=True)
-    energy = state.getPotentialEnergy() + state.getKineticEnergy()
-    
-    energies.append(energy._value)
-
-simulation.reporters.append(StateDataReporter('data.txt', 500, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
-simulation.reporters.append(NetCDFReporter('output.nc', 500))
-
-energies = np.array(energies)
-
-epsl = (1.0 / len(energies)) * np.sum(np.abs((energies - np.mean(energies)) / np.mean(energies)))
-
-print ("timestep: ", timestep_ps, "epsilon:", epsl, "log(eps)", np.log(epsl))
-
+simulation.step(100000)
 end = time()
 print (end - start)
-
-import matplotlib.pyplot as plt
-
-plt.plot(np.arange(len(energies)), energies - energies[0])
-
-plt.show()
 
