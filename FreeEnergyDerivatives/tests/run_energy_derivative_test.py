@@ -72,7 +72,10 @@ test = CustomSystem()
 
 system, positions, topology = test.system, test.positions, test.topology
 
-alchemical_system = sp.create_alchemical_system(system, solute_indexes=[0, 1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+alchemical_system = sp.create_alchemical_system(system, solute_indicies=[0, 1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+
+context = Context(alchemical_system, integrator)
 
 positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
 
