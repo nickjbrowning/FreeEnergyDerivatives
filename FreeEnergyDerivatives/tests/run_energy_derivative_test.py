@@ -58,7 +58,7 @@ class CustomSystem(TestSystem):
         
         mixing, expression = _get_sterics_expression()
         
-        force = openmm.CustomNonbondedForce(excepression + mixing)
+        force = openmm.CustomNonbondedForce(expression + mixing)
         
         force.addGlobalParameter('softcore_alpha', 0.4)
         force.addGlobalParameter('softcore_beta', 0.0)
@@ -67,6 +67,10 @@ class CustomSystem(TestSystem):
         force.addGlobalParameter('softcore_m', 1.0)
         force.addGlobalParameter('softcore_n', 6.0)
         force.addGlobalParameter('lambda_sterics', 1.0)
+        
+        force.addPerParticleParameter('sigma')
+        force.addPerParticleParameter('epsilon')
+        
         force.addEnergyParameterDerivative('lambda_sterics') 
         
         force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
@@ -75,7 +79,7 @@ class CustomSystem(TestSystem):
         
         mixing, expression = _get_sterics_expression_derivative()
         
-        force2 = openmm.CustomNonbondedForce(excepression + mixing)
+        force2 = openmm.CustomNonbondedForce(expression + mixing)
         
         force2.addGlobalParameter('softcore_alpha', 0.4)
         force2.addGlobalParameter('softcore_beta', 0.0)
@@ -85,6 +89,9 @@ class CustomSystem(TestSystem):
         force2.addGlobalParameter('softcore_n', 6.0)
         force2.addGlobalParameter('lambda_sterics', 1.0)
         force2.addEnergyParameterDerivative('lambda_sterics') 
+        
+        force2.addPerParticleParameter('sigma')
+        force2.addPerParticleParameter('epsilon')
         
         force2.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
         
@@ -128,7 +135,7 @@ system, positions, topology = test.system, test.positions, test.topology
 
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 
-context = Context(alchemical_system, integrator)
+context = Context(system, integrator)
 
 for distance in np.linspace(3.5, 5.0, 10):
     positions[1, 0] = distance * unit.angstroms
@@ -139,10 +146,8 @@ for distance in np.linspace(3.5, 5.0, 10):
 
     energy_derivs = state.getEnergyParameterDerivatives()
     
-    print ("P.E :", state.getPotentialEnergy())
-    
-    print (energy_derivs['lambda_sterics'])
-    
+    print ("P.E :", state.getPotentialEnergy(), "dVdl", energy_derivs['lambda_sterics'])
+
     state = context.getState(getEnergy=True, groups=set([1]))
     
     print ("dV/dl :", state.getPotentialEnergy())
