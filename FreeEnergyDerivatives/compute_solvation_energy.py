@@ -104,7 +104,7 @@ simulation.context.setParameter('lambda_electrostatics', 1.0)
 simulation.context.setParameter('lambda_sterics', 1.0)
 
 # fix any bad contacts etc
-simulation.minimizeEnergy()
+# simulation.minimizeEnergy()
 
 # lets equilibrate the system for 200 ps first
 simulation.step(100000)
@@ -125,7 +125,8 @@ PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb"
 '''
 electrostatics_grid = np.linspace(1.0, 0.0, args.nelectrostatic_points)
 
-dV_electrostatics, dVe_forces = TI.collect_dvdl_values(simulation, electrostatics_grid, args.nsamples, args.nsample_steps, solute_indexes, lambda_var='lambda_electrostatics', compute_forces=args.compute_forces)
+dV_electrostatics, dVe_forces = TI.collect_dvdl_values(simulation, electrostatics_grid, args.nsamples, args.nsample_steps,
+                                                       solute_indexes, lambda_var='lambda_electrostatics', compute_forces_along_path=args.compute_forces)
 
 dG_electrostatics = np.trapz(np.mean(dV_electrostatics, axis=1), x=electrostatics_grid[::-1])
 
@@ -139,7 +140,8 @@ sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points)
 
 print (simulation.context.getParameter('lambda_electrostatics'), simulation.context.getParameter('lambda_sterics'))
 
-dV_sterics, dVs_forces = collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps, solute_indexes, lambda_var='lambda_sterics', compute_forces=args.compute_forces)
+dV_sterics, dVs_forces = collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps,
+                                             solute_indexes, lambda_var='lambda_sterics', compute_forces_along_path=args.compute_forces)
 
 dG_sterics = np.trapz(np.mean(dV_sterics, axis=1), x=sterics_grid[::-1])
 print ("dG sterics,", dG_sterics)

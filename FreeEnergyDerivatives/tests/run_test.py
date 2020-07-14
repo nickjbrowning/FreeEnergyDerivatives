@@ -22,8 +22,11 @@ from lib import solvation_potentials as sp
 from pathlib import Path
 
 
-def minimize(system, integrator):
+def minimize(system, initial_pos, integrator):
+    alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=False)
     context = Context(system, integrator) 
+    context.setPositions(initial_pos)
+    
     minimizer = LocalEnergyMinimizer.minimize(context)
     
     return context.getState(getPositions=True).getPositions()
@@ -85,7 +88,7 @@ alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 integrator.setIntegrationForceGroups(set([0]))
 
-positions = minimize(alchemical_system, integrator)
+positions = minimize(alchemical_system, modeller.positions, integrator)
 
 simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
 simulation.context.setPositions(positions)
