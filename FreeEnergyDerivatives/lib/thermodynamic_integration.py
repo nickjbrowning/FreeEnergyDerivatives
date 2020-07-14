@@ -24,7 +24,7 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
         for iteration in range(nsamples):
             simulation.step(nsteps) 
             
-            state = simulation.context.getState(getEnergy=True, getParameterDerivatives=True)
+            state = simulation.context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
 
             energy_derivs = state.getEnergyParameterDerivatives()
             
