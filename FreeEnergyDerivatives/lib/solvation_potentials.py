@@ -97,7 +97,7 @@ def create_force(force_constructor, energy_expression, is_lambda_controlled=Fals
 
 def create_alchemical_system(system, solute_indicies, compute_solvation_response=False,
                                       annihilate_sterics=False, annihilate_electrostatics=False,
-                                      disable_alchemical_dispersion_correction=False, softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=1, softcore_b=1):
+                                      disable_alchemical_dispersion_correction=False, softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6.0, softcore_m=6.0, softcore_n=6.0, softcore_a=1.0, softcore_b=1.0):
     
     new_system = copy.deepcopy(system)
     

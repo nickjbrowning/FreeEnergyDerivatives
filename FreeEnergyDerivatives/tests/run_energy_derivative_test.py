@@ -20,7 +20,6 @@ from openmmtools.alchemy import  *
 
 from lib import solvation_potentials as sp
 from openmmtools.testsystems import TestSystem
-from __builtin__ import False, True
 
 
 class CustomSystem(TestSystem):
@@ -44,7 +43,7 @@ class CustomSystem(TestSystem):
         # Create positions.
         positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
         # Move the second particle along the x axis to be at the potential minimum.
-        positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
+        positions[0, 0] = 2.0 ** (1.0 / 6.0) * sigma
         positions[2, 0] = 4.0 ** (1.0 / 6.0) * sigma
 
         system.addParticle(mass)
@@ -60,8 +59,8 @@ class CustomSystem(TestSystem):
 
         self.system, self.positions = system, positions
 
-        self.ligand_indices = [0]
-        self.receptor_indices = [1]
+        self.ligand_indices = [1, 2]
+        self.receptor_indices = [0]
 
         topology = app.Topology()
         element = app.Element.getBySymbol('Ar')
@@ -78,20 +77,18 @@ class CustomSystem(TestSystem):
 test = CustomSystem()
 
 compute_response = False
-disable_longrange = True
+disable_longrange = False
 system, positions, topology = test.system, test.positions, test.topology
 
-alchemical_system = sp.create_alchemical_system(system, solute_indicies=[0, 1], softcore_beta=0.0, softcore_m=1.0,
+alchemical_system = sp.create_alchemical_system(system, solute_indicies=[0], softcore_beta=0.0, softcore_m=1.0,
                                                 disable_alchemical_dispersion_correction=disable_longrange, compute_solvation_response=compute_response)
 
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 
 context = Context(alchemical_system, integrator)
 
-positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
-
-for distance in np.linspace(2.5, 5.0, 10):
-    positions[1, 1] = distance * unit.angstroms
+for distance in np.linspace(3.5, 5.0, 10):
+    positions[0, 1] = distance * unit.angstroms
     
     context.setPositions(positions)
     
@@ -101,7 +98,7 @@ for distance in np.linspace(2.5, 5.0, 10):
     
     print (state.getPotentialEnergy())
     
-    print (energy_derivs)
+    print (energy_derivs.values())
     
     if (compute_response):
         state_deriv_electrostatics = context.getState(getEnergy=True, groups=set([1]))
