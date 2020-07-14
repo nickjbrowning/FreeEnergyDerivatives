@@ -38,21 +38,34 @@ class CustomSystem(TestSystem):
         system = openmm.System()
 
         def _get_sterics_expression():
-            exceptions_sterics_energy_expression = '4.0*(lambda_sterics^softcore_a)*epsilon*x*(x-1.0); x = (sigma/reff_sterics)^6;'
-            exceptions_sterics_energy_expression += 'reff_sterics = (softcore_alpha*sigma^softcore_n *(1.0-lambda_sterics)^softcore_a + r^softcore_n)^(1/softcore_n);'
+            exceptions_sterics_energy_expression = '4.0*lambda_sterics*epsilon*x*(x-1.0); x = (sigma/reff_sterics)^6;'
+            exceptions_sterics_energy_expression += 'reff_sterics = (softcore_alpha*sigma^softcore_n *(1.0-lambda_sterics^softcore_a) + r^softcore_n)^(1/softcore_n);'
             
             sterics_mixing_rules = 'sigma=0.5*(sigma1+sigma2); epsilon = sqrt(epsilon1*epsilon2);'
             
             return sterics_mixing_rules, exceptions_sterics_energy_expression
         
-        force = openmm.CustomNonbondedForce(_get_sterics_expression())
+        def _get_sterics_expression_derivative():
+            exceptions_sterics_energy_expression = '4.0*epsilon*x*(x-1.0) + lambda_sterics*4*epsilon*(dxdl*(x-1.0) + x*dxdl); x = (sigma/reff_sterics)^6;'
+            exceptions_sterics_energy_expression += 'dxdl = -6*(sigma^6/reff_sterics^7) * drdl;'
+            exceptions_sterics_energy_expression += 'drdl = -softcore_a*lambda_sterics^(softcore_a-1)*softcore_alpha*sigma^softcore_n * (1/softcore_n)*(softcore_alpha*sigma^softcore_n*(1.0-lambda_sterics^softcore_a)+r^softcore_n)^((1/softcore_n) - 1.0);'
+            
+            exceptions_sterics_energy_expression += 'reff_sterics = (softcore_alpha*sigma^softcore_n *(1.0-lambda_sterics^softcore_a) + r^softcore_n)^(1/softcore_n);'
+            
+            sterics_mixing_rules = 'sigma=0.5*(sigma1+sigma2); epsilon = sqrt(epsilon1*epsilon2);'
+            
+            return sterics_mixing_rules, exceptions_sterics_energy_expression
+        
+        mixing, expression = _get_sterics_expression()
+        
+        force = openmm.CustomNonbondedForce(excepression + mixing)
         
         force.addGlobalParameter('softcore_alpha', 0.4)
         force.addGlobalParameter('softcore_beta', 0.0)
-        force.addGlobalParameter('softcore_a', 1.0)
+        force.addGlobalParameter('softcore_a', 2.0)
         force.addGlobalParameter('softcore_b', 1.0)
-        force.addGlobalParameter('softcore_m', 6.0)
-        force.addGlobalParameter('softcore_n', 1.0)
+        force.addGlobalParameter('softcore_m', 1.0)
+        force.addGlobalParameter('softcore_n', 6.0)
         force.addGlobalParameter('lambda_sterics', 1.0)
         force.addEnergyParameterDerivative('lambda_sterics') 
         
@@ -60,18 +73,38 @@ class CustomSystem(TestSystem):
         
         force.setForceGroup(0)
         
+        mixing, expression = _get_sterics_expression_derivative()
+        
+        force2 = openmm.CustomNonbondedForce(excepression + mixing)
+        
+        force2.addGlobalParameter('softcore_alpha', 0.4)
+        force2.addGlobalParameter('softcore_beta', 0.0)
+        force2.addGlobalParameter('softcore_a', 2.0)
+        force2.addGlobalParameter('softcore_b', 1.0)
+        force2.addGlobalParameter('softcore_m', 1.0)
+        force2.addGlobalParameter('softcore_n', 6.0)
+        force2.addGlobalParameter('lambda_sterics', 1.0)
+        force2.addEnergyParameterDerivative('lambda_sterics') 
+        
+        force2.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+        
+        force2.setForceGroup(1)
+        
         # Create positions.
         positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
         # Move the second particle along the x axis to be at the potential minimum.
         positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
 
         system.addParticle(mass)
-        force.addParticle(charge, sigma, epsilon)
+        force.addParticle([charge, sigma, epsilon])
+        force2.addParticle([charge, sigma, epsilon])
         
         system.addParticle(mass)
-        force.addParticle(charge, sigma, epsilon)
-
+        force.addParticle([charge, sigma, epsilon])
+        force2.addParticle([charge, sigma, epsilon])
+        
         system.addForce(force)
+        system.addForce(force2)
 
         self.system, self.positions = system, positions
 
@@ -106,7 +139,11 @@ for distance in np.linspace(3.5, 5.0, 10):
 
     energy_derivs = state.getEnergyParameterDerivatives()
     
-    print (state.getPotentialEnergy())
+    print ("P.E :", state.getPotentialEnergy())
     
-    print (energy_derivs.values())
+    print (energy_derivs['lambda_sterics'])
+    
+    state = context.getState(getEnergy=True, groups=set([1]))
+    
+    print ("dV/dl :", state.getPotentialEnergy())
     

@@ -51,7 +51,7 @@ def _get_electrostatics_expression(reference_force):
     exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*(lambda_electrostatics^softcore_b)*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
     exceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
     exceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
-    exceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics)^softcore_b + r^softcore_m)^(1/softcore_m);'
+    exceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
         
     electrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
 
