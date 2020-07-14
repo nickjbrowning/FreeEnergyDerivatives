@@ -42,9 +42,10 @@ base_path = Path(__file__).parent
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
 
-file_path = (base_path / "ethanol.sdf").resolve()
+file_path = (base_path / 'ethanol.sdf').resolve()
+print (file_path)
 
-ligand_mol = Molecule.from_file(file_path, file_format='sdf')
+ligand_mol = Molecule.from_file('ethanol.sdf', file_format='sdf')
 
 forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
 
@@ -54,9 +55,9 @@ system_generator = SystemGenerator(
     molecules=[ligand_mol],
     forcefield_kwargs=forcefield_kwargs)
 
-file_path = (base_path / "ethanol.pdb").resolve()
+file_path = (base_path / 'ethanol.pdb').resolve()
 
-ligand_pdb = PDBFile(file_path)
+ligand_pdb = PDBFile('ethanol.pdb')
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 

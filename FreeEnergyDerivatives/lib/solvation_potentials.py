@@ -67,7 +67,7 @@ def _get_electrostatics_expression_derivative(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
-    drdl = '-(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics)^softcore_b +r^softcore_m)^((1/softcore_m) - 1.0)'
+    drdl = 'drdl = -(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics)^softcore_b +r^softcore_m)^((1/softcore_m) - 1.0)'
     drdl += '*softcore_beta*softcore_b*(1.0-lambda_electrostatics)^(softcore_b-1.0);'
     
     exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*softcore_b*lambda_electrostatics^(softcore_b-1.0)*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
