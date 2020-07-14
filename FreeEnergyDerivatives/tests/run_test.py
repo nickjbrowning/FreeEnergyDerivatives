@@ -22,6 +22,13 @@ from lib import solvation_potentials as sp
 from pathlib import Path
 
 
+def minimize(system, integrator):
+    context = Context(system, integrator) 
+    minimizer = LocalEnergyMinimizer.minimize(context)
+    
+    return context.getState(getPositions=True).getPositions()
+    
+
 def collect_solute_indexes(topology):
     soluteIndices = []
     for res in topology.residues():
@@ -76,12 +83,14 @@ alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore
     
 alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-# integrator.setIntegrationForceGroups(set([0]))
+integrator.setIntegrationForceGroups(set([0]))
+
+positions = minimize(alchemical_system, integrator)
 
 simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
-simulation.context.setPositions(modeller.positions)
+simulation.context.setPositions(positions)
 
-simulation.minimizeEnergy()
+# simulation.minimizeEnergy()
 
 state = simulation.context.getState(getPositions=True)
 PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb", "w"))
