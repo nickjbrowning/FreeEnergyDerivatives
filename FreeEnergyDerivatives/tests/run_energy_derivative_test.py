@@ -103,12 +103,12 @@ class CustomSystem(TestSystem):
         positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
 
         system.addParticle(mass)
-        force.addParticle([charge, sigma, epsilon])
-        force2.addParticle([charge, sigma, epsilon])
+        force.addParticle([ sigma, epsilon])
+        force2.addParticle([ sigma, epsilon])
         
         system.addParticle(mass)
-        force.addParticle([charge, sigma, epsilon])
-        force2.addParticle([charge, sigma, epsilon])
+        force.addParticle([ sigma, epsilon])
+        force2.addParticle([ sigma, epsilon])
         
         system.addForce(force)
         system.addForce(force2)
