@@ -32,13 +32,14 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
             
             dV[idx, iteration] = energy_deriv  
             
-            if (compute_forces_along_path):  # only collect forces at the end state
+            if (compute_forces_along_path): 
+                lambda_group = -1
                 if (lambda_var == 'lambda_electrostatics'):
-                    print ("electrostatics")
-                    state_deriv = simulation.context.getState(getEnergy=True, getForces=True, groups=set([1]))
-                elif (lambda_var == 'lambda_serics'):
-                    print ("sterics")
-                    state_deriv = simulation.context.getState(getEnergy=True, getForces=True, groups=set([2]))
+                    lambda_group = 1
+                elif (lambda_var == 'lambda_sterics'):
+                    lambda_group = 2
+                
+                state_deriv = simulation.context.getState(getEnergy=True, getForces=True, groups=set([lambda_group]))
                 
                 dvdl = state_deriv.getPotentialEnergy()
                 
