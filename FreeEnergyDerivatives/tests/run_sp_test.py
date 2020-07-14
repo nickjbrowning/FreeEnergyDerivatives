@@ -47,10 +47,10 @@ class CustomSystem(TestSystem):
         positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
 
         system.addParticle(mass)
-        force.addParticle([charge, sigma, epsilon])
+        force.addParticle(charge, sigma, epsilon)
         
         system.addParticle(mass)
-        force.addParticle([charge, sigma, epsilon])
+        force.addParticle(charge, sigma, epsilon)
         
         system.addForce(force)
 
@@ -89,9 +89,12 @@ for distance in np.linspace(3.5, 5.0, 10):
 
     energy_derivs = state.getEnergyParameterDerivatives()
     
-    print ("P.E :", state.getPotentialEnergy(), "dVdl", energy_derivs['lambda_electrostatics'])
-
-    state = context.getState(getEnergy=True, groups=set([1]))
+    print ("P.E :", state.getPotentialEnergy())
     
-    print ("dV/dl :", state.getPotentialEnergy())
+    state = context.getState(getEnergy=True, groups=set([1]))
+    print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy())
+    
+    state = context.getState(getEnergy=True, groups=set([2]))
+    
+    print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy())
     
