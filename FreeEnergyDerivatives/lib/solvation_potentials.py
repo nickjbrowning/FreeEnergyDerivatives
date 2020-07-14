@@ -277,9 +277,6 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         force.addGlobalParameter('softcore_m', softcore_m)
         force.addGlobalParameter('softcore_n', softcore_n)
     
-    # add the new non-bonded force with alchemical interactions removed
-    new_system.addForce(nonbonded_force)
-    
     # add all forces representing alchemical interactions
     for force in all_custom_forces:
         add_global_parameters(force)
@@ -288,12 +285,14 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     if (compute_solvation_response):
         # Add dV/dl energy components
-        _add_alchemical_response(system, solute_indicies,
+        _add_alchemical_response(new_system, solute_indicies,
                                       annihilate_sterics, annihilate_electrostatics,
                                       disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
     
     # remove the original non-bonded force
     new_system.removeForce(force_idx)
+    # add the new non-bonded force with alchemical interactions removed
+    new_system.addForce(nonbonded_force)
     
     return new_system
 

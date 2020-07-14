@@ -18,6 +18,9 @@ from openmmtools import forces
 
 from openmmtools.alchemy import  *
 
+from lib import solvation_potentials as sp
+from pathlib import Path
+
 
 def collect_solute_indexes(topology):
     soluteIndices = []
@@ -29,14 +32,19 @@ def collect_solute_indexes(topology):
     return soluteIndices
 
 
-platform = openmm.Platform.getPlatformByName('OpenCL')
+platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
+
+base_path = Path(__file__).parent
 
 '''
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
-ligand_mol = Molecule.from_file('ethanol.sdf', file_format='sdf')
+
+file_path = (base_path / "ethanol.sdf").resolve()
+
+ligand_mol = Molecule.from_file(file_path, file_format='sdf')
 
 forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
 
@@ -46,7 +54,9 @@ system_generator = SystemGenerator(
     molecules=[ligand_mol],
     forcefield_kwargs=forcefield_kwargs)
 
-ligand_pdb = PDBFile('ethanol.pdb')
+file_path = (base_path / "ethanol.pdb").resolve()
+
+ligand_pdb = PDBFile(file_path)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
@@ -57,7 +67,7 @@ system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMe
 
 solute_indexes = collect_solute_indexes(modeller.topology)
 
-alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0)
+alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
 
 '''
 ---FINISHED SYSTEM PREPARATION---
