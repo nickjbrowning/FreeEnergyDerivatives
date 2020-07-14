@@ -14,6 +14,7 @@ from openmmforcefields.generators import SystemGenerator
 from lib import solvation_potentials as sp
 from lib import thermodynamic_integration as TI
 import argparse
+from Cython.Shadow import integral
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdf', type=str)
@@ -79,7 +80,7 @@ if (args.solute_indexes == None):
 else:
     solute_indexes = np.array(args.solute_indexes)
 
-alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0)
+alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=args.compute_forces)
 
 # freeze solute
 if (args.freeze_atoms):
@@ -94,6 +95,7 @@ if (args.freeze_atoms):
 alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
 # Use a simple thermostat for T control
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+integrator.setIntegrationForceGroups(set([0]))
 integrator.setConstraintTolerance(1.0E-08)
 
 simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
