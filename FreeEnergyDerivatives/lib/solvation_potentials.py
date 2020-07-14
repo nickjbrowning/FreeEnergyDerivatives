@@ -357,6 +357,12 @@ def _add_alchemical_response(system, solute_indicies, annihilate_sterics=False, 
         
         force.setForceGroup(2)
         
+    for force in all_sterics_custom_bond_forces:
+        force.addPerBondParameter("sigma")  
+        force.addPerBondParameter("epsilon")
+        
+        force.setForceGroup(2)
+        
     for force in all_electrostatics_custom_nonbonded_forces:
         force.addPerParticleParameter("charge")
         # force.addPerParticleParameter("sigma") 
@@ -366,13 +372,7 @@ def _add_alchemical_response(system, solute_indicies, annihilate_sterics=False, 
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
         force.setForceGroup(1)
-    
-    for force in all_sterics_custom_bond_forces:
-        force.addPerBondParameter("sigma")  
-        force.addPerBondParameter("epsilon")
         
-        force.setForceGroup(2)
-    
     for force in all_electrostatics_custom_bond_forces:
         force.addPerBondParameter("chargeprod")  # charge product
         # force.addPerBondParameter("sigma") 
