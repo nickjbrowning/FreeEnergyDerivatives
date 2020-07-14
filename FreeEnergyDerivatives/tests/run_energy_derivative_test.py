@@ -37,17 +37,33 @@ class CustomSystem(TestSystem):
 
         system = openmm.System()
 
-        force = openmm.NonbondedForce()
+        def _get_sterics_expression():
+            exceptions_sterics_energy_expression = '4.0*(lambda_sterics^softcore_a)*epsilon*x*(x-1.0); x = (sigma/reff_sterics)^6;'
+            exceptions_sterics_energy_expression += 'reff_sterics = (softcore_alpha*sigma^softcore_n *(1.0-lambda_sterics)^softcore_a + r^softcore_n)^(1/softcore_n);'
+            
+            sterics_mixing_rules = 'sigma=0.5*(sigma1+sigma2); epsilon = sqrt(epsilon1*epsilon2);'
+            
+            return sterics_mixing_rules, exceptions_sterics_energy_expression
+        
+        force = openmm.CustomNonbondedForce(_get_sterics_expression())
+        
+        force.addGlobalParameter('softcore_alpha', 0.4)
+        force.addGlobalParameter('softcore_beta', 0.0)
+        force.addGlobalParameter('softcore_a', 1.0)
+        force.addGlobalParameter('softcore_b', 1.0)
+        force.addGlobalParameter('softcore_m', 6.0)
+        force.addGlobalParameter('softcore_n', 1.0)
+        force.addGlobalParameter('lambda_sterics', 1.0)
+        force.addEnergyParameterDerivative('lambda_sterics') 
+        
         force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
-
+        
+        force.setForceGroup(0)
+        
         # Create positions.
-        positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
+        positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
         # Move the second particle along the x axis to be at the potential minimum.
-        positions[0, 0] = 2.0 ** (1.0 / 6.0) * sigma
-        positions[2, 0] = 4.0 ** (1.0 / 6.0) * sigma
-
-        system.addParticle(mass)
-        force.addParticle(charge, sigma, epsilon)
+        positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
 
         system.addParticle(mass)
         force.addParticle(charge, sigma, epsilon)
@@ -59,8 +75,8 @@ class CustomSystem(TestSystem):
 
         self.system, self.positions = system, positions
 
-        self.ligand_indices = [1, 2]
-        self.receptor_indices = [0]
+        self.ligand_indices = [0]
+        self.receptor_indices = [1]
 
         topology = app.Topology()
         element = app.Element.getBySymbol('Ar')
@@ -69,26 +85,20 @@ class CustomSystem(TestSystem):
         topology.addAtom('Ar', element, residue)
         residue = topology.addResidue('Ar', chain)
         topology.addAtom('Ar', element, residue)
-        residue = topology.addResidue('Ar', chain)
-        topology.addAtom('Ar', element, residue)
+
         self.topology = topology
 
 
 test = CustomSystem()
 
-compute_response = False
-disable_longrange = False
 system, positions, topology = test.system, test.positions, test.topology
-
-alchemical_system = sp.create_alchemical_system(system, solute_indicies=[0], softcore_beta=0.0, softcore_m=1.0,
-                                                disable_alchemical_dispersion_correction=disable_longrange, compute_solvation_response=compute_response)
 
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 
 context = Context(alchemical_system, integrator)
 
 for distance in np.linspace(3.5, 5.0, 10):
-    positions[0, 1] = distance * unit.angstroms
+    positions[1, 0] = distance * unit.angstroms
     
     context.setPositions(positions)
     
@@ -99,14 +109,4 @@ for distance in np.linspace(3.5, 5.0, 10):
     print (state.getPotentialEnergy())
     
     print (energy_derivs.values())
-    
-    if (compute_response):
-        state_deriv_electrostatics = context.getState(getEnergy=True, groups=set([1]))
-        energy_deriv_electrostatics = energy_derivs['lambda_electrostatics']
-        
-        print ("Electrostatics Diff:", energy_deriv_electrostatics, state_deriv_electrostatics.getPotentialEnergy())
-        
-        state_deriv_sterics = context.getState(getEnergy=True, groups=set([2]))
-        energy_deriv_sterics = energy_derivs['lambda_sterics']
-        print ("Sterics Diff:", energy_deriv_sterics, state_deriv_sterics.getPotentialEnergy())
     
