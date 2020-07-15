@@ -110,6 +110,7 @@ def test_waterbox():
     system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    integrator.setIntegrationForceGroups(set([0]))
     
     context = Context(system, integrator, platform)
     
@@ -119,11 +120,11 @@ def test_waterbox():
 
     energy_derivs = state.getEnergyParameterDerivatives()
     
-    state = context.getState(getEnergy=True, groups=set([1]))
-    print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
+    deriv_state = context.getState(getEnergy=True, groups=set([1]))
+    print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], deriv_state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - deriv_state.getPotentialEnergy()._value)
     
-    state = context.getState(getEnergy=True, groups=set([2]))
-    print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
+    deriv_state = context.getState(getEnergy=True, groups=set([2]))
+    print ("steric dV/dl :", energy_derivs['lambda_sterics'], deriv_state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - deriv_state.getPotentialEnergy()._value)
         
 
 if __name__ == "__main__":
