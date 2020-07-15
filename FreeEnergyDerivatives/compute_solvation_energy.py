@@ -14,7 +14,6 @@ from openmmforcefields.generators import SystemGenerator
 from lib import solvation_potentials as sp
 from lib import thermodynamic_integration as TI
 import argparse
-from Cython.Shadow import integral
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdf', type=str)

@@ -13,7 +13,7 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
     
     for i, l in enumerate(lambda_grid):
         
-        # assume lambda_grid has been generated in reverse (i.e coupled -> uncoupled) 
+        # assume lambda_grid has been generated in the direction coupled (\lambda=1.0) -> uncoupled (\lambda=0.0) 
         idx = len(lambda_grid) - i - 1
         
         simulation.context.setParameter(lambda_var, l)

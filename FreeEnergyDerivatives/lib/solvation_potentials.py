@@ -18,23 +18,15 @@ def _get_sterics_expression():
 
 
 def _get_sterics_expression_derivative():
-    
-    drdl = 'drdl = -softcore_a*lambda_sterics^(softcore_a-1.0)*softcore_alpha*sigma^softcore_n * (1.0/softcore_n)*(softcore_alpha*sigma^softcore_n*(1.0-lambda_sterics^softcore_a) + r^softcore_n)^((1.0/softcore_n) - 1.0);'
-    
-    dxdl = 'dxdl = -6*(sigma^6/reff_sterics^7) * drdl;'
-    
-    reff_sterics = 'reff_sterics = (softcore_alpha*sigma^softcore_n*(1.0-lambda_sterics^softcore_a) + r^softcore_n)^(1/softcore_n);'
-    
-    exceptions_sterics_energy_expression_deriv = '4.0*epsilon*x*(x-1.0) +'
-    exceptions_sterics_energy_expression_deriv += '4.0*epsilon*lambda_sterics*(dxdl*(x-1) + x*dxdl);'
-    exceptions_sterics_energy_expression_deriv += 'x = (sigma/reff_sterics)^6;'
-    exceptions_sterics_energy_expression_deriv += dxdl
-    exceptions_sterics_energy_expression_deriv += drdl
-    exceptions_sterics_energy_expression_deriv += reff_sterics
-    
-    sterics_mixing_rules = 'sigma=0.5*(sigma1+sigma2); epsilon = sqrt(epsilon1*epsilon2);'
-    
-    return sterics_mixing_rules, exceptions_sterics_energy_expression_deriv
+        exceptions_sterics_energy_expression = '4.0*epsilon*x*(x-1.0) + lambda_sterics*4*epsilon*(dxdl*(x-1.0) + x*dxdl); x = (sigma/reff_sterics)^6;'
+        exceptions_sterics_energy_expression += 'dxdl = -6*(sigma^6/reff_sterics^7) * drdl;'
+        exceptions_sterics_energy_expression += 'drdl = -softcore_a*lambda_sterics^(softcore_a-1)*softcore_alpha*sigma^softcore_n * (1/softcore_n)*(softcore_alpha*sigma^softcore_n*(1.0-lambda_sterics^softcore_a)+r^softcore_n)^((1/softcore_n) - 1.0);'
+        
+        exceptions_sterics_energy_expression += 'reff_sterics = (softcore_alpha*sigma^softcore_n *(1.0-lambda_sterics^softcore_a) + r^softcore_n)^(1/softcore_n);'
+        
+        sterics_mixing_rules = 'sigma=0.5*(sigma1+sigma2); epsilon = sqrt(epsilon1*epsilon2);'
+        
+        return sterics_mixing_rules, exceptions_sterics_energy_expression
 
 
 def _get_electrostatics_expression(reference_force):
@@ -66,7 +58,7 @@ def _get_electrostatics_expression_derivative(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
-    drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta * (1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
+    drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
     
     exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
     exceptions_electrostatics_energy_expression += '+ ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(-reff_electrostatics^(-2.0)*drdl + 2*k_rf*reff_electrostatics*drdl);'
@@ -290,6 +282,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     # remove the original non-bonded force
     new_system.removeForce(force_idx)
     # add the new non-bonded force with alchemical interactions removed
+    nonbonded_force.setForceGroup(0)
     new_system.addForce(nonbonded_force)
     
     return new_system

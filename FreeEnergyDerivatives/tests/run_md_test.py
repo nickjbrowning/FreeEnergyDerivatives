@@ -88,10 +88,10 @@ alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 integrator.setIntegrationForceGroups(set([0]))
 
-positions = minimize(alchemical_system, modeller.positions, integrator)
+# positions = minimize(alchemical_system, modeller.positions, integrator)
 
 simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
-simulation.context.setPositions(positions)
+simulation.context.setPositions(modeller.positions)
 
 # simulation.minimizeEnergy()
 
