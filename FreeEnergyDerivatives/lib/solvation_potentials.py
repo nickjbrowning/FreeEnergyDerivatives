@@ -275,7 +275,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     if (compute_solvation_response):
         # Add dV/dl energy components
-        _add_alchemical_response(new_system, solute_indicies,
+        _add_alchemical_response(new_system, reference_force, solute_indicies,
                                       annihilate_sterics, annihilate_electrostatics,
                                       disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
     
@@ -288,13 +288,11 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     return new_system
 
 
-def _add_alchemical_response(system, solute_indicies, annihilate_sterics=False, annihilate_electrostatics=False, disable_alchemical_dispersion_correction=False,
+def _add_alchemical_response(system, reference_force, solute_indicies, annihilate_sterics=False, annihilate_electrostatics=False, disable_alchemical_dispersion_correction=False,
                                        softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=1, softcore_b=1):
     
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
-    
-    force_idx, reference_force = forces.find_forces(system, openmm.NonbondedForce, only_one=True)
     
     sterics_mixing_roles, exceptions_sterics_energy_expression = _get_sterics_expression_derivative()
     

@@ -21,7 +21,7 @@ from openmmtools.alchemy import  *
 from lib import solvation_potentials as sp
 from openmmtools.testsystems import TestSystem, WaterBox
 
-platform = openmm.Platform.getPlatformByName('OpenCL')
+platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
 
