@@ -38,7 +38,7 @@ def test_diatomic_system():
             self.sigma = sigma
             self.epsilon = epsilon
     
-            charge = 0.3 * unit.elementary_charge
+            charge = 1.0 * unit.elementary_charge
     
             system = openmm.System()
             
