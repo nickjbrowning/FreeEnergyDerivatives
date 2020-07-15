@@ -142,7 +142,7 @@ sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points)
 
 print (simulation.context.getParameter('lambda_electrostatics'), simulation.context.getParameter('lambda_sterics'))
 
-dV_sterics, dVs_forces = collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps,
+dV_sterics, dVs_forces = TI.collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps,
                                              solute_indexes, lambda_var='lambda_sterics', compute_forces_along_path=args.compute_forces)
 
 dG_sterics = np.trapz(np.mean(dV_sterics, axis=1), x=sterics_grid[::-1])

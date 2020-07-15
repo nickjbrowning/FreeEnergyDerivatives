@@ -52,6 +52,6 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
             print ("%5.2f %5.2f %8.5f" % 
                    (simulation.context.getParameter(lambda_var), np.average(dV[idx, :]), np.std(dV[idx, :]) / np.sqrt(nsamples))
                    )
-            print (np.average(t))
+            print ("Debug, analytical dv/dl derivative:", np.average(t))
     
     return dV, sample_forces
