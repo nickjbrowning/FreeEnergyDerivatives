@@ -4,7 +4,7 @@ from simtk import unit
 from simtk.openmm import app
 from openmmtools.constants import ONE_4PI_EPS0
 from openmmtools import forces
-
+import numpy as np
 import copy
 
 
@@ -33,7 +33,7 @@ def _get_electrostatics_expression(reference_force):
     
     epsilon_solvent = reference_force.getReactionFieldDielectric()
     rcut = reference_force.getCutoffDistance()
-    eps = (1.0 / ONE_4PI_EPS0) * 4 * np.pi
+    eps = (1.0 / ONE_4PI_EPS0) / (4 * np.pi)
     
     k_rf = rcut ** (-3) * ((epsilon_solvent - eps) / (2 * epsilon_solvent + eps))
     k_rf = k_rf.value_in_unit_system(unit.md_unit_system)  
