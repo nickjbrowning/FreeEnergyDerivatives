@@ -376,11 +376,9 @@ def _add_alchemical_response(system, reference_force, solute_indicies, annihilat
             
     # Now restrict pairwise interactions to their respective groups
     na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
-    aa_sterics_custom_nonbonded_force.addInteractionGroup(alchemical_atoms, alchemical_atoms)
     
     na_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
-    aa_electrostatics_custom_nonbonded_force.addInteractionGroup(alchemical_atoms, alchemical_atoms)
-    
+
     # now lets handle exclusions and exceptions
     all_custom_nonbonded_forces = all_sterics_custom_nonbonded_forces + all_electrostatics_custom_nonbonded_forces
     
@@ -398,15 +396,8 @@ def _add_alchemical_response(system, reference_force, solute_indicies, annihilat
         both_alchemical = iatom in alchemical_atoms and jatom in alchemical_atoms
         at_least_one_alchemical = iatom in alchemical_atoms or jatom in alchemical_atoms
         only_one_alchemical = at_least_one_alchemical and not both_alchemical
-        
-        # If exception (and not exclusion), add special CustomBondForce terms to handle alchemically modified LJ and reactionfield electrostatics
-        if both_alchemical:
-            if is_exception_epsilon:
-                aa_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
-            if is_exception_chargeprod:
-                aa_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
 
-        elif only_one_alchemical:
+        if only_one_alchemical:
             if is_exception_epsilon:
                 na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
             if is_exception_chargeprod:
