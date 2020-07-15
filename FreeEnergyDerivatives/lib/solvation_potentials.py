@@ -33,19 +33,12 @@ def _get_electrostatics_expression(reference_force):
     
     epsilon_solvent = reference_force.getReactionFieldDielectric()
     rcut = reference_force.getCutoffDistance()
-    eps = (1.0 / ONE_4PI_EPS0) / (4 * np.pi)
-    
-    k_rf = rcut ** (-3) * ((epsilon_solvent - eps) / (2 * epsilon_solvent + eps))
+
+    k_rf = rcut ** (-3) * ((epsilon_solvent - 1) / (2 * epsilon_solvent + 1))
     k_rf = k_rf.value_in_unit_system(unit.md_unit_system)  
-    
-    c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + eps))
+     
+    c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
-    
-#     k_rf = rcut ** (-3) * ((epsilon_solvent - 1) / (2 * epsilon_solvent + 1))
-#     k_rf = k_rf.value_in_unit_system(unit.md_unit_system)  
-#     
-#     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
-#     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
     exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
     exceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
@@ -61,12 +54,10 @@ def _get_electrostatics_expression_derivative(reference_force):
     epsilon_solvent = reference_force.getReactionFieldDielectric()
     rcut = reference_force.getCutoffDistance()
     
-    eps = 1 / ONE_4PI_EPS0 * 4 * np.pi
-    
-    k_rf = rcut ** (-3) * ((epsilon_solvent - eps) / (2 * epsilon_solvent + eps))
+    k_rf = rcut ** (-3) * ((epsilon_solvent - 1) / (2 * epsilon_solvent + 1))
     k_rf = k_rf.value_in_unit_system(unit.md_unit_system)  
-    
-    c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + eps))
+     
+    c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
     drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
