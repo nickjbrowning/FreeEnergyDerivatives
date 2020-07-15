@@ -33,7 +33,7 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
             dV[idx, iteration] = energy_deriv  
             
             if (compute_forces_along_path): 
-                lambda_group = -1
+                lambda_group = 999
                 if (lambda_var == 'lambda_electrostatics'):
                     lambda_group = 1
                 elif (lambda_var == 'lambda_sterics'):

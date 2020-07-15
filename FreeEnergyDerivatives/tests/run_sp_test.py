@@ -19,82 +19,113 @@ from openmmtools import forces
 from openmmtools.alchemy import  *
 
 from lib import solvation_potentials as sp
-from openmmtools.testsystems import TestSystem
+from openmmtools.testsystems import TestSystem, WaterBox
 
 
-class CustomSystem(TestSystem):
+def test_diatomic_system():
+    
+    class CustomSystem(TestSystem):
+    
+        def __init__(self, mass=39.9 * unit.amu, sigma=3.350 * unit.angstrom, epsilon=10.0 * unit.kilocalories_per_mole, **kwargs):
+    
+            TestSystem.__init__(self, **kwargs)
+    
+            # Store parameters
+            self.mass = mass
+            self.sigma = sigma
+            self.epsilon = epsilon
+    
+            charge = 0.3 * unit.elementary_charge
+    
+            system = openmm.System()
+            
+            force = openmm.NonbondedForce()
+            
+            force.setForceGroup(0)
+       
+            # Create positions.
+            positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
+            # Move the second particle along the x axis to be at the potential minimum.
+            positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
+    
+            system.addParticle(mass)
+            force.addParticle(charge, sigma, epsilon)
+            
+            system.addParticle(mass)
+            force.addParticle(charge, sigma, epsilon)
+            
+            system.addForce(force)
+    
+            self.system, self.positions = system, positions
+    
+            self.ligand_indices = [0]
+            self.receptor_indices = [1]
+    
+            topology = app.Topology()
+            element = app.Element.getBySymbol('Ar')
+            chain = topology.addChain()
+            residue = topology.addResidue('Ar', chain)
+            topology.addAtom('Ar', element, residue)
+            residue = topology.addResidue('Ar', chain)
+            topology.addAtom('Ar', element, residue)
+    
+            self.topology = topology
+            
+    test = CustomSystem()
 
-    def __init__(self, mass=39.9 * unit.amu, sigma=3.350 * unit.angstrom, epsilon=10.0 * unit.kilocalories_per_mole, **kwargs):
-
-        TestSystem.__init__(self, **kwargs)
-
-        # Store parameters
-        self.mass = mass
-        self.sigma = sigma
-        self.epsilon = epsilon
-
-        charge = 0.3 * unit.elementary_charge
-
-        system = openmm.System()
+    system, positions, topology = test.system, test.positions, test.topology
+    
+    system = sp.create_alchemical_system(system, [0], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    
+    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    
+    context = Context(system, integrator)
+    
+    for distance in np.linspace(3.5, 5.0, 10):
+        positions[1, 0] = distance * unit.angstroms
         
-        force = openmm.NonbondedForce()
+        context.setPositions(positions)
         
-        force.setForceGroup(0)
-   
-        # Create positions.
-        positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
-        # Move the second particle along the x axis to be at the potential minimum.
-        positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
-
-        system.addParticle(mass)
-        force.addParticle(charge, sigma, epsilon)
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+    
+        energy_derivs = state.getEnergyParameterDerivatives()
         
-        system.addParticle(mass)
-        force.addParticle(charge, sigma, epsilon)
+        print ("P.E :", state.getPotentialEnergy())
         
-        system.addForce(force)
-
-        self.system, self.positions = system, positions
-
-        self.ligand_indices = [0]
-        self.receptor_indices = [1]
-
-        topology = app.Topology()
-        element = app.Element.getBySymbol('Ar')
-        chain = topology.addChain()
-        residue = topology.addResidue('Ar', chain)
-        topology.addAtom('Ar', element, residue)
-        residue = topology.addResidue('Ar', chain)
-        topology.addAtom('Ar', element, residue)
-
-        self.topology = topology
+        state = context.getState(getEnergy=True, groups=set([1]))
+        print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
+        
+        state = context.getState(getEnergy=True, groups=set([2]))
+        print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
 
 
-test = CustomSystem()
-
-system, positions, topology = test.system, test.positions, test.topology
-
-system = sp.create_alchemical_system(system, [0], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
-
-integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-
-context = Context(system, integrator)
-
-for distance in np.linspace(3.5, 5.0, 10):
-    positions[1, 0] = distance * unit.angstroms
+def test_waterbox():
+    waterbox = WaterBox()
     
-    context.setPositions(positions)
+    system, positions, topology = waterbox.system, waterbox.positions, waterbox.topology
     
-    state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+    system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    
+    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    
+    context = Context(system, integrator)
 
-    energy_derivs = state.getEnergyParameterDerivatives()
-    
-    print ("P.E :", state.getPotentialEnergy())
-    
-    state = context.getState(getEnergy=True, groups=set([1]))
-    print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy())
-    
-    state = context.getState(getEnergy=True, groups=set([2]))
-    
-    print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy())
-    
+    for i in (5):
+        integrator.step(100)
+        
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+
+        energy_derivs = state.getEnergyParameterDerivatives()
+        
+        state = context.getState(getEnergy=True, groups=set([1]))
+        print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
+        
+        state = context.getState(getEnergy=True, groups=set([2]))
+        print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
+            
+
+if __name__ == "__main__":
+    print ("Diatomic System")
+    test_diatomic_system()
+    print ("Waterbox")
+    test_waterbox()
