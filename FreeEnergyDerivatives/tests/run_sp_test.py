@@ -112,20 +112,19 @@ def test_waterbox():
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
     context = Context(system, integrator, platform)
+    
+    context.setPositions(positions)
 
-    for i in range(5):
-        integrator.step(100)
-        
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+    state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
 
-        energy_derivs = state.getEnergyParameterDerivatives()
+    energy_derivs = state.getEnergyParameterDerivatives()
+    
+    state = context.getState(getEnergy=True, groups=set([1]))
+    print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
+    
+    state = context.getState(getEnergy=True, groups=set([2]))
+    print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
         
-        state = context.getState(getEnergy=True, groups=set([1]))
-        print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
-        
-        state = context.getState(getEnergy=True, groups=set([2]))
-        print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
-            
 
 if __name__ == "__main__":
     print ("Diatomic System")
