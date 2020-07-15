@@ -21,6 +21,9 @@ from openmmtools.alchemy import  *
 from lib import solvation_potentials as sp
 from openmmtools.testsystems import TestSystem, WaterBox
 
+platform = openmm.Platform.getPlatformByName('OpenCL')
+platform.setPropertyDefaultValue('Precision', 'mixed')
+
 
 def test_diatomic_system():
     
@@ -79,7 +82,7 @@ def test_diatomic_system():
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
-    context = Context(system, integrator)
+    context = Context(system, integrator, platform)
     
     for distance in np.linspace(3.5, 5.0, 10):
         positions[1, 0] = distance * unit.angstroms
@@ -108,9 +111,9 @@ def test_waterbox():
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
-    context = Context(system, integrator)
+    context = Context(system, integrator, platform)
 
-    for i in (5):
+    for i in range(5):
         integrator.step(100)
         
         state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
