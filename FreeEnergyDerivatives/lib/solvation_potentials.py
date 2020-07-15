@@ -75,12 +75,13 @@ def _get_electrostatics_expression_derivative(reference_force):
     return electrostatics_mixing_rules, exceptions_electrostatics_energy_expression
 
 
-def create_force(force_constructor, energy_expression, is_lambda_controlled=False, lambda_var=None):
+def create_force(force_constructor, energy_expression, is_lambda_controlled=False, lambda_var=None, request_derivative=True):
    
     if (is_lambda_controlled):
         force = force_constructor(energy_expression)
         force.addGlobalParameter(lambda_var, 1.0)
-        force.addEnergyParameterDerivative(lambda_var)  # also request that we compute dE/dlambda
+        if (request_derivative):
+            force.addEnergyParameterDerivative(lambda_var)  # also request that we compute dE/dlambda
     else:
         energy_expression = energy_expression + lambda_var + '=1.0;'
         force = force_constructor(energy_expression)
@@ -305,34 +306,24 @@ def _add_alchemical_response(system, reference_force, solute_indicies, annihilat
     electrostatics_energy_expression = exceptions_electrostatics_energy_expression + electrostatics_mixing_rules
     
     na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
-                                                    True, 'lambda_sterics')
-    aa_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
-                                                    annihilate_sterics, 'lambda_sterics')
+                                                    True, 'lambda_sterics', False)
     
-    all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force, aa_sterics_custom_nonbonded_force]
+    all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force]
     
     na_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, electrostatics_energy_expression,
-                                                            True, 'lambda_electrostatics')
-    
-    aa_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, electrostatics_energy_expression,
-                                                            annihilate_electrostatics, 'lambda_electrostatics')
-    
-    all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force, aa_electrostatics_custom_nonbonded_force]
+                                                            True, 'lambda_electrostatics', False)
+    all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force]
     
     # CustomBondForces represent exceptions not picked up by exclusions 
     na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_sterics_energy_expression,
-                                                True, 'lambda_sterics')
-    aa_sterics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_sterics_energy_expression,
-                                                annihilate_sterics, 'lambda_sterics')
+                                                True, 'lambda_sterics', False)
     
-    all_sterics_custom_bond_forces = [na_sterics_custom_bond_force, aa_sterics_custom_bond_force]
+    all_sterics_custom_bond_forces = [na_sterics_custom_bond_force]
     
     na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
-                                                       True, 'lambda_electrostatics')
-    aa_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
-                                                       annihilate_electrostatics, 'lambda_electrostatics')
-    
-    all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force, aa_electrostatics_custom_bond_force]
+                                                       True, 'lambda_electrostatics', False)
+   
+    all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force]
 
     for force in all_sterics_custom_nonbonded_forces:
         force.addPerParticleParameter("sigma")
