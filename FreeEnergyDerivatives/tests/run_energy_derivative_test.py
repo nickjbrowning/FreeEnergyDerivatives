@@ -63,7 +63,7 @@ class CustomSystem(TestSystem):
         force.addGlobalParameter('softcore_alpha', 0.4)
         force.addGlobalParameter('softcore_beta', 0.0)
         force.addGlobalParameter('softcore_a', 2.0)
-        force.addGlobalParameter('softcore_b', 1.0)
+        force.addGlobalParameter('softcore_b', 2.0)
         force.addGlobalParameter('softcore_m', 1.0)
         force.addGlobalParameter('softcore_n', 6.0)
         force.addGlobalParameter('lambda_sterics', 1.0)
@@ -84,7 +84,7 @@ class CustomSystem(TestSystem):
         force2.addGlobalParameter('softcore_alpha', 0.4)
         force2.addGlobalParameter('softcore_beta', 0.0)
         force2.addGlobalParameter('softcore_a', 2.0)
-        force2.addGlobalParameter('softcore_b', 1.0)
+        force2.addGlobalParameter('softcore_b', 2.0)
         force2.addGlobalParameter('softcore_m', 1.0)
         force2.addGlobalParameter('softcore_n', 6.0)
         force2.addGlobalParameter('lambda_sterics', 1.0)
@@ -98,10 +98,15 @@ class CustomSystem(TestSystem):
         force2.setForceGroup(1)
         
         # Create positions.
-        positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
+        positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
         # Move the second particle along the x axis to be at the potential minimum.
         positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
-
+        positions[2, 0] = 2 * 2.0 ** (1.0 / 6.0) * sigma
+        
+        system.addParticle(mass)
+        force.addParticle([ sigma, epsilon])
+        force2.addParticle([ sigma, epsilon])
+        
         system.addParticle(mass)
         force.addParticle([ sigma, epsilon])
         force2.addParticle([ sigma, epsilon])
@@ -115,12 +120,11 @@ class CustomSystem(TestSystem):
 
         self.system, self.positions = system, positions
 
-        self.ligand_indices = [0]
-        self.receptor_indices = [1]
-
         topology = app.Topology()
         element = app.Element.getBySymbol('Ar')
         chain = topology.addChain()
+        residue = topology.addResidue('Ar', chain)
+        topology.addAtom('Ar', element, residue)
         residue = topology.addResidue('Ar', chain)
         topology.addAtom('Ar', element, residue)
         residue = topology.addResidue('Ar', chain)
@@ -138,7 +142,7 @@ integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.
 context = Context(system, integrator)
 
 for distance in np.linspace(3.5, 5.0, 10):
-    positions[1, 0] = distance * unit.angstroms
+    positions[1, 1] = distance * unit.angstroms
     
     context.setPositions(positions)
     
