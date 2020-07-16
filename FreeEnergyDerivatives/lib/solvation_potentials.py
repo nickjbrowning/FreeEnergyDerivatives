@@ -98,7 +98,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
     
-    for force in new_system.getForces():
+    for force in system.getForces():
         # group 0 will be used as integration group
         force.setForceGroup(0)
         
@@ -280,7 +280,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     for force in all_custom_forces:
         add_global_parameters(force)
         force.setForceGroup(0)  # integration force group
-        new_system.addForce(force)
+        system.addForce(force)
     
     # remove the original non-bonded force
     # new_system.removeForce(force_idx)
@@ -288,7 +288,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     # nonbonded_force.setForceGroup(0)
     # new_system.addForce(nonbonded_force)
     
-    return new_system
+    return system
 
 
 def create_alchemical_system2(system, solute_indicies, compute_solvation_response=False,
