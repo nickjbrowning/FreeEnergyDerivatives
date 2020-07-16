@@ -331,7 +331,7 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
         force.setCutoffDistance(reference_force.getCutoffDistance())
         force.setSwitchingDistance(reference_force.getSwitchingDistance())
         
-        #force.setUseLongRangeCorrection(False)
+        # force.setUseLongRangeCorrection(False)
         if disable_alchemical_dispersion_correction:
             force.setUseLongRangeCorrection(False)
         else:
@@ -396,12 +396,11 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
         at_least_one_alchemical = iatom in alchemical_atoms or jatom in alchemical_atoms
         only_one_alchemical = at_least_one_alchemical and not both_alchemical
 
-        #if only_one_alchemical:
-        #    if is_exception_epsilon:
-        #        na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
-        #    if is_exception_chargeprod:
-        #        na_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
-        # else: both particles are non-alchemical, leave them in the unmodified NonbondedForce
+        if only_one_alchemical:
+            if is_exception_epsilon:
+                na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
+            if is_exception_chargeprod:
+                na_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
     
     all_custom_forces = (all_custom_nonbonded_forces + all_sterics_custom_bond_forces + all_electrostatics_custom_bond_forces)
     

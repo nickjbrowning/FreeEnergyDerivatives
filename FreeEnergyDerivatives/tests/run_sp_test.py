@@ -114,6 +114,9 @@ def test_waterbox():
     
     context = Context(system, integrator, platform)
     
+    context.setParameter('lambda_sterics', 0.0)
+    context.setParameter('lambda_electrostatics', 0.0)
+    
     context.setPositions(positions)
 
     state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
