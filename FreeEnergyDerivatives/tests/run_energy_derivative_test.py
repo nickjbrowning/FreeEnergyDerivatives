@@ -88,7 +88,6 @@ class CustomSystem(TestSystem):
         force2.addGlobalParameter('softcore_m', 1.0)
         force2.addGlobalParameter('softcore_n', 6.0)
         force2.addGlobalParameter('lambda_sterics', 1.0)
-        force2.addEnergyParameterDerivative('lambda_sterics') 
         
         force2.addPerParticleParameter('sigma')
         force2.addPerParticleParameter('epsilon')
