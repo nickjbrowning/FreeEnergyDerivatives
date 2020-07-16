@@ -104,7 +104,7 @@ def test_diatomic_system():
         
         state = context.getState(getEnergy=True, groups=set([2]))
         print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
-
+    
 
 def test_waterbox():
     waterbox = WaterBox()
@@ -152,10 +152,103 @@ def test_waterbox():
         
         print ("lambda: ", context.getParameter('lambda_sterics'))
         print("steric dV/dl :", dvdls, deriv_steric, "Diff: ", dvdls - deriv_steric)
+
+
+def finite_diff_test():
+    
+    class CustomSystem(TestSystem):
+    
+        def __init__(self, mass=39.9 * unit.amu, sigma=3.350 * unit.angstrom, epsilon=10.0 * unit.kilocalories_per_mole, **kwargs):
+    
+            TestSystem.__init__(self, **kwargs)
+    
+            # Store parameters
+            self.mass = mass
+            self.sigma = sigma
+            self.epsilon = epsilon
+    
+            charge = 0.3 * unit.elementary_charge
+    
+            system = openmm.System()
             
+            force = openmm.NonbondedForce()
+            
+            force.setForceGroup(0)
+            force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+            
+            # Create positions.
+            positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
+            # Move the second particle along the x axis to be at the potential minimum.
+            positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
+            positions[2, 0] = 4.0 ** (1.0 / 6.0) * sigma
+            
+            system.addParticle(mass)
+            force.addParticle(charge, sigma, epsilon)
+            
+            system.addParticle(mass)
+            force.addParticle(charge, sigma, epsilon)
+            
+            system.addParticle(mass)
+            force.addParticle(charge, sigma, epsilon)
+            
+            system.addForce(force)
+    
+            self.system, self.positions = system, positions
+
+            topology = app.Topology()
+            element = app.Element.getBySymbol('Ar')
+            chain = topology.addChain()
+            
+            for i in range(len(positions)):
+                residue = topology.addResidue('Ar', chain)
+                topology.addAtom('Ar', element, residue)
+          
+            self.topology = topology
+            
+    test = CustomSystem()
+
+    system, positions, topology = test.system, test.positions, test.topology
+    
+    system = sp.create_alchemical_system(system, [1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    
+    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    
+    context = Context(system, integrator, platform)
+    
+    context.setParameter('lambda_sterics', 0.5)
+    context.setParameter('lambda_electrostatics', 0.5)
+ 
+    context.setPositions(positions)
+    
+    state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+
+    energy_derivs = state.getEnergyParameterDerivatives()
+    
+    print ("P.E :", state.getPotentialEnergy())
+    
+    state = context.getState(getEnergy=True, groups=set([1]))
+    
+    print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'])
+    
+    state = context.getState(getEnergy=True, groups=set([2]))
+    
+    print ("steric dV/dl :", energy_derivs['lambda_sterics'])
+    
+    context.setParameter('lambda_sterics', 0.5 + 0.005)
+    
+    state1 = context.getState(getEnergy=True, groups=set([1]))
+    
+    context.setParameter('lambda_sterics', 0.5 - 0.005)
+    
+    state2 = context.getState(getEnergy=True, groups=set([1]))
+    
+    print ((state1.getPotentialEnergy() - state2.getPotentialEnergy()) / (2 * 0.005))
+      
 
 if __name__ == "__main__":
     print ("Diatomic System")
     test_diatomic_system()
     print ("Waterbox")
     test_waterbox()
+    print ("finite diff test")
+    finite_diff_test()
