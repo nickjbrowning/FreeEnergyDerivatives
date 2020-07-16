@@ -81,7 +81,7 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    new_system = sp.create_alchemical_system2(system, [1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    new_system = sp.create_alchemical_system(system, [1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
     
     new_integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds) 
