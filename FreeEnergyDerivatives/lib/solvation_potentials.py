@@ -93,18 +93,23 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
                                       annihilate_sterics=False, annihilate_electrostatics=False,
                                       disable_alchemical_dispersion_correction=False, softcore_alpha=0.4, softcore_beta=0.0, softcore_m=1.0, softcore_n=6.0, softcore_a=2.0, softcore_b=2.0):
     
-    # new_system = copy.deepcopy(system)
+    new_system = copy.deepcopy(system)
     
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
     
-    for force in system.getForces():
+    for force in new_system.getForces():
         # group 0 will be used as integration group
         force.setForceGroup(0)
         
-    force_idx, reference_force = forces.find_forces(system, openmm.NonbondedForce, only_one=True)
+    force_idx, reference_force = forces.find_forces(new_system, openmm.NonbondedForce, only_one=True)
     
-    # nonbonded_force = reference_force  # copy.deepcopy(reference_force)
+    if (compute_solvation_response):
+        # Add dV/dl energy components
+        _add_alchemical_response(new_system, reference_force, solute_indicies,
+                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
+        
+    nonbonded_force = copy.deepcopy(reference_force)
     
     sterics_mixing_roles, exceptions_sterics_energy_expression = _get_sterics_expression()
     
@@ -183,7 +188,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
             warning_msg = 'particle %d has Lennard-Jones sigma = 0 (charge=%s, sigma=%s, epsilon=%s); setting sigma=1A'
             logger.warning(warning_msg % (particle_index, str(charge), str(sigma), str(epsilon)))
             sigma = 3.0 * unit.angstrom
-            reference_force.setParticleParameters(particle_index, charge, sigma, epsilon)
+            nonbonded_force.setParticleParameters(particle_index, charge, sigma, epsilon)
             
     # also do the same for exceptions
     for exception_index in range(reference_force.getNumExceptions()):
@@ -195,13 +200,8 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
             logger.warning(warning_msg % (exception_index, iatom, jatom, str(chargeprod), str(sigma), str(epsilon)))
             sigma = 3.0 * unit.angstrom
             # Fix it.
-            reference_force.setExceptionParameters(exception_index, iatom, jatom, chargeprod, sigma, epsilon)
+            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, chargeprod, sigma, epsilon)
     
-    if (compute_solvation_response):
-        # Add dV/dl energy components
-        _add_alchemical_response(system, reference_force, solute_indicies,
-                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
-        
     # add all particles to all custom forces...
     for particle_index in range(reference_force.getNumParticles()):
 
@@ -219,7 +219,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
 
         if particle_index in solute_indicies:
-            reference_force.setParticleParameters(particle_index, abs(0.0 * charge), sigma, abs(0 * epsilon))
+            nonbonded_force.setParticleParameters(particle_index, abs(0.0 * charge), sigma, abs(0 * epsilon))
             
     # Now restrict pairwise interactions to their respective groups
     na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
@@ -264,7 +264,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         
         # remove this exception in original reference force
         if at_least_one_alchemical:
-            reference_force.setExceptionParameters(exception_index, iatom, jatom, abs(0.0 * chargeprod), sigma, abs(0.0 * epsilon))
+            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, abs(0.0 * chargeprod), sigma, abs(0.0 * epsilon))
     
     all_custom_forces = (all_custom_nonbonded_forces + all_sterics_custom_bond_forces + all_electrostatics_custom_bond_forces)
     
@@ -280,15 +280,15 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     for force in all_custom_forces:
         add_global_parameters(force)
         force.setForceGroup(0)  # integration force group
-        system.addForce(force)
+        new_system.addForce(force)
     
     # remove the original non-bonded force
-    # new_system.removeForce(force_idx)
+    new_system.removeForce(force_idx)
     # add the new non-bonded force with alchemical interactions removed
-    # nonbonded_force.setForceGroup(0)
-    # new_system.addForce(nonbonded_force)
+    nonbonded_force.setForceGroup(0)
+    new_system.addForce(nonbonded_force)
     
-    return system
+    return new_system
 
 
 def create_alchemical_system2(system, solute_indicies, compute_solvation_response=False,
