@@ -70,7 +70,7 @@ def test_diatomic_system():
             element = app.Element.getBySymbol('Ar')
             chain = topology.addChain()
             
-            for i in len(positions):
+            for i in range(len(positions)):
                 residue = topology.addResidue('Ar', chain)
                 topology.addAtom('Ar', element, residue)
           
@@ -80,7 +80,7 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    system = sp.create_alchemical_system(system, [0], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    system = sp.create_alchemical_system(system, [1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
