@@ -396,33 +396,28 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
         force.addPerBondParameter("chargeprod")  
         
     if (compute_solvation_response):
-        for force in dna_sterics_custom_nonbonded_force:
-            force.addPerParticleParameter("sigma")
-            force.addPerParticleParameter("epsilon") 
-            force.setUseSwitchingFunction(reference_force.getUseSwitchingFunction())
-            force.setCutoffDistance(reference_force.getCutoffDistance())
-            force.setSwitchingDistance(reference_force.getSwitchingDistance())
-            
-            if disable_alchemical_dispersion_correction:
-                force.setUseLongRangeCorrection(False)
-            else:
-                force.setUseLongRangeCorrection(reference_force.getUseDispersionCorrection())
-        
-            force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
-            
-        for force in dna_electrostatics_custom_nonbonded_force:
-            force.addPerParticleParameter("charge")
-            force.setUseSwitchingFunction(False)
-            force.setCutoffDistance(reference_force.getCutoffDistance())
-            force.setUseLongRangeCorrection(False)  
-            force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
-        
-        for force in dna_sterics_custom_bond_force:
-            force.addPerBondParameter("sigma")  
-            force.addPerBondParameter("epsilon")
-        
-        for force in dna_electrostatics_custom_bond_force:
-            force.addPerBondParameter("chargeprod")  
+
+        dna_sterics_custom_nonbonded_force.addPerParticleParameter("sigma")
+        dna_sterics_custom_nonbonded_force.addPerParticleParameter("epsilon") 
+        dna_sterics_custom_nonbonded_force.setUseSwitchingFunction(reference_force.getUseSwitchingFunction())
+        dna_sterics_custom_nonbonded_force.setCutoffDistance(reference_force.getCutoffDistance())
+        dna_sterics_custom_nonbonded_force.setSwitchingDistance(reference_force.getSwitchingDistance())
+        if disable_alchemical_dispersion_correction:
+            dna_sterics_custom_nonbonded_force.setUseLongRangeCorrection(False)
+        else:
+            dna_sterics_custom_nonbonded_force.setUseLongRangeCorrection(reference_force.getUseDispersionCorrection())
+        dna_sterics_custom_nonbonded_force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
+       
+        dna_electrostatics_custom_nonbonded_force.addPerParticleParameter("charge")
+        dna_electrostatics_custom_nonbonded_force.setUseSwitchingFunction(False)
+        dna_electrostatics_custom_nonbonded_force.setCutoffDistance(reference_force.getCutoffDistance())
+        dna_electrostatics_custom_nonbonded_force.setUseLongRangeCorrection(False)  
+        dna_electrostatics_custom_nonbonded_force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
+
+        dna_sterics_custom_bond_force.addPerBondParameter("sigma")  
+        dna_sterics_custom_bond_force.addPerBondParameter("epsilon")
+
+        dna_electrostatics_custom_bond_force.addPerBondParameter("chargeprod")  
         
     # fix any missing values that can screw things up
     for particle_index in range(reference_force.getNumParticles()):
