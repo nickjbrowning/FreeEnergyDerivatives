@@ -83,6 +83,8 @@ def test_diatomic_system():
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
     context = Context(system, integrator, platform)
+    context.setParameter('lambda_sterics', 0.0)
+    context.setParameter('lambda_electrostatics', 0.0)
     
     for distance in np.linspace(3.5, 5.0, 10):
         positions[1, 0] = distance * unit.angstroms
@@ -107,7 +109,7 @@ def test_waterbox():
     
     system, positions, topology = waterbox.system, waterbox.positions, waterbox.topology
     
-    system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=False)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     integrator.setIntegrationForceGroups(set([0]))
