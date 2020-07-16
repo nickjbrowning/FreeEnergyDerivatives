@@ -143,7 +143,7 @@ class CustomSystem(TestSystem):
         
         electrostatics.setForceGroup(0)
         
-        mixing, expression = _get_sterics_expression_derivative()
+        mixing, expression = _get_electrostatics_expression_derivative(0.5, 1.5)
         
         electrostatics_deriv = openmm.CustomNonbondedForce(expression + mixing)
         

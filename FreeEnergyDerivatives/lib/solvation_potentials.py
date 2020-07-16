@@ -39,9 +39,7 @@ def _get_electrostatics_expression(reference_force):
      
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
-    
-    print (k_rf, c_rf)
-    
+
     dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
     dexceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
     dexceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
@@ -62,7 +60,6 @@ def _get_electrostatics_expression_derivative(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
-    print (k_rf, c_rf)
     drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
     
     dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
@@ -107,7 +104,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         
     force_idx, reference_force = forces.find_forces(new_system, openmm.NonbondedForce, only_one=True)
     
-    nonbonded_force = copy.deepcopy(reference_force)
+    nonbonded_force = reference_force  # copy.deepcopy(reference_force)
     
     sterics_mixing_roles, exceptions_sterics_energy_expression = _get_sterics_expression()
     
@@ -286,10 +283,10 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
                                       disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
     
     # remove the original non-bonded force
-    new_system.removeForce(force_idx)
+    # new_system.removeForce(force_idx)
     # add the new non-bonded force with alchemical interactions removed
-    nonbonded_force.setForceGroup(0)
-    new_system.addForce(nonbonded_force)
+    # nonbonded_force.setForceGroup(0)
+    # new_system.addForce(nonbonded_force)
     
     return new_system
 
