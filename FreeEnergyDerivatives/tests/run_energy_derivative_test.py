@@ -37,6 +37,33 @@ class CustomSystem(TestSystem):
 
         system = openmm.System()
 
+        def _get_electrostatics_expression(k_rf, c_rf):
+            
+            dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
+            dexceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
+            dexceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
+            dexceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
+                
+            delectrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
+        
+            return delectrostatics_mixing_rules, dexceptions_electrostatics_energy_expression
+        
+        def _get_electrostatics_expression_derivative(k_rf, c_rf):
+           
+            drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
+            
+            dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
+            dexceptions_electrostatics_energy_expression += '+ ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(-1.0*reff_electrostatics^(-2.0)*drdl + 2*k_rf*reff_electrostatics*drdl);'
+            dexceptions_electrostatics_energy_expression += drdl
+            dexceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
+            dexceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
+            
+            dexceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
+                
+            delectrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
+        
+            return delectrostatics_mixing_rules, dexceptions_electrostatics_energy_expression
+
         def _get_sterics_expression():
             exceptions_sterics_energy_expression = '4.0*lambda_sterics*epsilon*x*(x-1.0); x = (sigma/reff_sterics)^6;'
             exceptions_sterics_energy_expression += 'reff_sterics = (softcore_alpha*sigma^softcore_n *(1.0-lambda_sterics^softcore_a) + r^softcore_n)^(1/softcore_n);'
@@ -58,43 +85,81 @@ class CustomSystem(TestSystem):
         
         mixing, expression = _get_sterics_expression()
         
-        force = openmm.CustomNonbondedForce(expression + mixing)
+        sterics = openmm.CustomNonbondedForce(expression + mixing)
         
-        force.addGlobalParameter('softcore_alpha', 0.4)
-        force.addGlobalParameter('softcore_beta', 0.0)
-        force.addGlobalParameter('softcore_a', 2.0)
-        force.addGlobalParameter('softcore_b', 2.0)
-        force.addGlobalParameter('softcore_m', 1.0)
-        force.addGlobalParameter('softcore_n', 6.0)
-        force.addGlobalParameter('lambda_sterics', 1.0)
+        sterics.addGlobalParameter('softcore_alpha', 0.4)
+        sterics.addGlobalParameter('softcore_beta', 0.0)
+        sterics.addGlobalParameter('softcore_a', 2.0)
+        sterics.addGlobalParameter('softcore_b', 2.0)
+        sterics.addGlobalParameter('softcore_m', 1.0)
+        sterics.addGlobalParameter('softcore_n', 6.0)
+        sterics.addGlobalParameter('lambda_sterics', 1.0)
         
-        force.addPerParticleParameter('sigma')
-        force.addPerParticleParameter('epsilon')
+        sterics.addPerParticleParameter('sigma')
+        sterics.addPerParticleParameter('epsilon')
         
-        force.addEnergyParameterDerivative('lambda_sterics') 
+        sterics.addEnergyParameterDerivative('lambda_sterics') 
         
-        force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+        sterics.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
         
-        force.setForceGroup(0)
+        sterics.setForceGroup(0)
         
         mixing, expression = _get_sterics_expression_derivative()
         
-        force2 = openmm.CustomNonbondedForce(expression + mixing)
+        sterics_deriv = openmm.CustomNonbondedForce(expression + mixing)
         
-        force2.addGlobalParameter('softcore_alpha', 0.4)
-        force2.addGlobalParameter('softcore_beta', 0.0)
-        force2.addGlobalParameter('softcore_a', 2.0)
-        force2.addGlobalParameter('softcore_b', 2.0)
-        force2.addGlobalParameter('softcore_m', 1.0)
-        force2.addGlobalParameter('softcore_n', 6.0)
-        force2.addGlobalParameter('lambda_sterics', 1.0)
+        sterics_deriv.addGlobalParameter('softcore_alpha', 0.4)
+        sterics_deriv.addGlobalParameter('softcore_beta', 0.0)
+        sterics_deriv.addGlobalParameter('softcore_a', 2.0)
+        sterics_deriv.addGlobalParameter('softcore_b', 2.0)
+        sterics_deriv.addGlobalParameter('softcore_m', 1.0)
+        sterics_deriv.addGlobalParameter('softcore_n', 6.0)
+        sterics_deriv.addGlobalParameter('lambda_sterics', 1.0)
         
-        force2.addPerParticleParameter('sigma')
-        force2.addPerParticleParameter('epsilon')
+        sterics_deriv.addPerParticleParameter('sigma')
+        sterics_deriv.addPerParticleParameter('epsilon')
         
-        force2.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+        sterics_deriv.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
         
-        force2.setForceGroup(1)
+        sterics_deriv.setForceGroup(1)
+        
+        mixing, expression = _get_electrostatics_expression(0.5, 1.5)
+        
+        electrostatics = openmm.CustomNonbondedForce(expression + mixing)
+        
+        electrostatics.addGlobalParameter('softcore_alpha', 0.4)
+        electrostatics.addGlobalParameter('softcore_beta', 0.0)
+        electrostatics.addGlobalParameter('softcore_a', 2.0)
+        electrostatics.addGlobalParameter('softcore_b', 2.0)
+        electrostatics.addGlobalParameter('softcore_m', 1.0)
+        electrostatics.addGlobalParameter('softcore_n', 6.0)
+        electrostatics.addGlobalParameter('lambda_electrostatics', 1.0)
+        
+        electrostatics.addPerParticleParameter('charge')
+        
+        electrostatics.addEnergyParameterDerivative('lambda_electrostatics') 
+        
+        electrostatics.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+        
+        electrostatics.setForceGroup(0)
+        
+        mixing, expression = _get_sterics_expression_derivative()
+        
+        electrostatics_deriv = openmm.CustomNonbondedForce(expression + mixing)
+        
+        electrostatics_deriv.addGlobalParameter('softcore_alpha', 0.4)
+        electrostatics_deriv.addGlobalParameter('softcore_beta', 0.0)
+        electrostatics_deriv.addGlobalParameter('softcore_a', 2.0)
+        electrostatics_deriv.addGlobalParameter('softcore_b', 2.0)
+        electrostatics_deriv.addGlobalParameter('softcore_m', 1.0)
+        electrostatics_deriv.addGlobalParameter('softcore_n', 6.0)
+        electrostatics_deriv.addGlobalParameter('lambda_electrostatics', 1.0)
+        
+        electrostatics_deriv.addPerParticleParameter('charge')
+        
+        electrostatics_deriv.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+        
+        electrostatics_deriv.setForceGroup(2)
         
         # Create positions.
         positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
@@ -103,20 +168,28 @@ class CustomSystem(TestSystem):
         positions[2, 0] = 2 * 2.0 ** (1.0 / 6.0) * sigma
         
         system.addParticle(mass)
-        force.addParticle([ sigma, epsilon])
-        force2.addParticle([ sigma, epsilon])
+        sterics.addParticle([ sigma, epsilon])
+        sterics_deriv.addParticle([ sigma, epsilon])
+        electrostatics.addParticle([charge])
+        electrostatics_deriv.addParticle([charge])
         
         system.addParticle(mass)
-        force.addParticle([ sigma, epsilon])
-        force2.addParticle([ sigma, epsilon])
+        sterics.addParticle([ sigma, epsilon])
+        sterics_deriv.addParticle([ sigma, epsilon])
+        electrostatics.addParticle([charge])
+        electrostatics_deriv.addParticle([charge])
         
         system.addParticle(mass)
-        force.addParticle([ sigma, epsilon])
-        force2.addParticle([ sigma, epsilon])
+        sterics.addParticle([ sigma, epsilon])
+        sterics_deriv.addParticle([ sigma, epsilon])
+        electrostatics.addParticle([charge])
+        electrostatics_deriv.addParticle([charge])
         
-        system.addForce(force)
-        system.addForce(force2)
-
+        system.addForce(sterics)
+        system.addForce(sterics_deriv)
+        system.addForce(electrostatics)
+        system.addForce(electrostatics_deriv)
+        
         self.system, self.positions = system, positions
 
         topology = app.Topology()
@@ -149,9 +222,13 @@ for distance in np.linspace(3.5, 5.0, 10):
 
     energy_derivs = state.getEnergyParameterDerivatives()
     
-    print ("P.E :", state.getPotentialEnergy(), "dVdl", energy_derivs['lambda_sterics'])
+    print ("P.E :", state.getPotentialEnergy(), "dVdl_sterics", energy_derivs['lambda_sterics'], "dVdl_electrostatics", energy_derivs['lambda_electrostatics'])
 
     state = context.getState(getEnergy=True, groups=set([1]))
     
-    print ("dV/dl :", state.getPotentialEnergy())
+    print ("dV/dl_sterics:", state.getPotentialEnergy())
+    
+    state = context.getState(getEnergy=True, groups=set([2]))
+    
+    print ("dV/dl_electrostatics:", state.getPotentialEnergy())
     
