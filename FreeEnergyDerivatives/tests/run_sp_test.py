@@ -128,9 +128,9 @@ def test_waterbox():
         dvdle = energy_derivs['lambda_electrostatics']
         
         deriv_state = context.getState(getEnergy=True, groups=set([1]))
-        deriv_steric = deriv_state.getPotentialEnergy()._value
+        deriv_electrostatic = deriv_state.getPotentialEnergy()._value
         
-        print ("steric dV/dl :", dvdls, deriv_electrostatic, "Diff: ", dvdls - deriv_electrostatic)
+        print ("electrostatic dV/dl :", dvdle, deriv_electrostatic, "Diff: ", dvdle - deriv_electrostatic)
         
     print ("STERICS")
     for l in np.linspace(1.0, 0.0, 10):
@@ -145,9 +145,9 @@ def test_waterbox():
         dvdls = energy_derivs['lambda_sterics']
         
         deriv_state = context.getState(getEnergy=True, groups=set([2]))
-        deriv_electrostatic = deriv_state.getPotentialEnergy()._value
+        deriv_steric = deriv_state.getPotentialEnergy()._value
         
-        print ("steric dV/dl :", dvdls, deriv_electrostatic, "Diff: ", dvdls - deriv_electrostatic)
+        print ("steric dV/dl :", dvdls, deriv_steric, "Diff: ", dvdls - deriv_steric)
             
 
 if __name__ == "__main__":
