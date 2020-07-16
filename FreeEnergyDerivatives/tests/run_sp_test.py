@@ -45,12 +45,17 @@ def test_diatomic_system():
             force = openmm.NonbondedForce()
             
             force.setForceGroup(0)
-       
+            force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+            
             # Create positions.
-            positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
+            positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
             # Move the second particle along the x axis to be at the potential minimum.
             positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
-    
+            positions[2, 0] = 4.0 ** (1.0 / 6.0) * sigma
+            
+            system.addParticle(mass)
+            force.addParticle(charge, sigma, epsilon)
+            
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
             
@@ -60,18 +65,15 @@ def test_diatomic_system():
             system.addForce(force)
     
             self.system, self.positions = system, positions
-    
-            self.ligand_indices = [0]
-            self.receptor_indices = [1]
-    
+
             topology = app.Topology()
             element = app.Element.getBySymbol('Ar')
             chain = topology.addChain()
-            residue = topology.addResidue('Ar', chain)
-            topology.addAtom('Ar', element, residue)
-            residue = topology.addResidue('Ar', chain)
-            topology.addAtom('Ar', element, residue)
-    
+            
+            for i in len(positions):
+                residue = topology.addResidue('Ar', chain)
+                topology.addAtom('Ar', element, residue)
+          
             self.topology = topology
             
     test = CustomSystem()

@@ -81,6 +81,7 @@ def create_force(force_constructor, energy_expression, is_lambda_controlled=Fals
         force = force_constructor(energy_expression)
         force.addGlobalParameter(lambda_var, 1.0)
         if (request_derivative):
+            print ("Requesting derivative on: ", force_constructor, lambda_var)
             force.addEnergyParameterDerivative(lambda_var)  # also request that we compute dE/dlambda
     else:
         energy_expression = energy_expression + lambda_var + '=1.0;'
@@ -200,7 +201,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     for particle_index in range(reference_force.getNumParticles()):
 
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
-      
+        
         for force in all_sterics_custom_nonbonded_forces:
             force.addParticle([sigma, epsilon])
       
@@ -505,8 +506,6 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
             if is_exception_chargeprod:
                 aa_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
 
-        # When this is a single region we model the exception between alchemical
-        # and non-alchemical particles using a single custom bond.
         elif only_one_alchemical:
             
             if is_exception_epsilon:
