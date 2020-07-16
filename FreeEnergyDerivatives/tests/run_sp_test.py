@@ -46,6 +46,7 @@ def test_diatomic_system():
             
             force.setForceGroup(0)
             force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+            print (force.getUseSwitchingFunction())
             
             # Create positions.
             positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
@@ -102,8 +103,8 @@ def test_diatomic_system():
         energy_derivs = new_state.getEnergyParameterDerivatives()
         
         print ("P.E :", new_state.getPotentialEnergy(), context.getState(getEnergy=True).getPotentialEnergy())
-        state = new_context.getState(getEnergy=True, groups=2 ** 1)
         
+        state = new_context.getState(getEnergy=True, groups=2 ** 1)
         print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
         
         state = new_context.getState(getEnergy=True, groups=2 ** 2)
@@ -240,11 +241,11 @@ def finite_diff_test():
     
     context.setParameter('lambda_sterics', 0.5 + 0.5 * 0.005)
     
-    state1 = context.getState(getEnergy=True, groups=[2 ** 0])
+    state1 = context.getState(getEnergy=True, groups=2 ** 0)
     
     context.setParameter('lambda_sterics', 0.5 - 0.5 * 0.005)
     
-    state2 = context.getState(getEnergy=True, groups=[2 ** 0])
+    state2 = context.getState(getEnergy=True, groups=2 ** 0)
     
     print (state1.getPotentialEnergy(), state2.getPotentialEnergy())
     print ((state1.getPotentialEnergy() - state2.getPotentialEnergy()))
