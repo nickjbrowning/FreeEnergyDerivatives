@@ -40,14 +40,14 @@ def _get_electrostatics_expression(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
-    exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
-    exceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
-    exceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
-    exceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
+    dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
+    dexceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
+    dexceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
+    dexceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
         
-    electrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
+    delectrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
 
-    return electrostatics_mixing_rules, exceptions_electrostatics_energy_expression
+    return delectrostatics_mixing_rules, dexceptions_electrostatics_energy_expression
 
 
 def _get_electrostatics_expression_derivative(reference_force):
@@ -62,17 +62,17 @@ def _get_electrostatics_expression_derivative(reference_force):
     
     drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
     
-    exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
-    exceptions_electrostatics_energy_expression += '+ ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(-reff_electrostatics^(-2.0)*drdl + 2*k_rf*reff_electrostatics*drdl);'
-    exceptions_electrostatics_energy_expression += drdl
-    exceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
-    exceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
+    dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
+    dexceptions_electrostatics_energy_expression += '+ ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(-reff_electrostatics^(-2.0)*drdl + 2*k_rf*reff_electrostatics*drdl);'
+    dexceptions_electrostatics_energy_expression += drdl
+    dexceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
+    dexceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
     
-    exceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
+    dexceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
         
-    electrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
+    delectrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
 
-    return electrostatics_mixing_rules, exceptions_electrostatics_energy_expression
+    return delectrostatics_mixing_rules, dexceptions_electrostatics_energy_expression
 
 
 def create_force(force_constructor, energy_expression, is_lambda_controlled=False, lambda_var=None, request_derivative=True):
@@ -426,6 +426,7 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
         
         if sigma == 0.0 * unit.angstrom:
+            print ("YO")
             warning_msg = 'particle %d has Lennard-Jones sigma = 0 (charge=%s, sigma=%s, epsilon=%s); setting sigma=1A'
             logger.warning(warning_msg % (particle_index, str(charge), str(sigma), str(epsilon)))
             sigma = 3.0 * unit.angstrom
@@ -570,7 +571,7 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
 
 
 def _add_alchemical_response(system, reference_force, solute_indicies, disable_alchemical_dispersion_correction=False,
-                                       softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=1, softcore_b=1):
+                                       softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=2, softcore_b=2):
     
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)

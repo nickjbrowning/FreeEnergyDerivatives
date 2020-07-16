@@ -47,23 +47,21 @@ def test_diatomic_system():
             force.setForceGroup(0)
             force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
             
-            print (reference_force.getUseDispersionCorrection())
-            
             # Create positions.
             positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
-            # Move the second particle along the x axis to be at the potential minimum.
-            positions[1, 0] = 3.0 ** (1.0 / 6.0) * sigma
-            positions[2, 0] = 6.0 ** (1.0 / 6.0) * sigma
+            
+            positions[1, 0] = 2.2 ** (1.0 / 6.0) * sigma
+            positions[2, 0] = 2 * 2.2 ** (1.0 / 6.0) * sigma
             
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
             
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
-            
+           
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
-            
+
             system.addForce(force)
     
             self.system, self.positions = system, positions
@@ -82,29 +80,33 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    system = sp.create_alchemical_system(system, [1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    new_system = sp.create_alchemical_system2(system, [1], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
     
-    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    new_integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds) 
     
+    new_context = Context(new_system, new_integrator, platform)
     context = Context(system, integrator, platform)
-    context.setParameter('lambda_sterics', 0.0)
-    context.setParameter('lambda_electrostatics', 0.0)
     
+    new_context.setParameter('lambda_sterics', 1.0)
+    new_context.setParameter('lambda_electrostatics', 1.0)
+
     for distance in np.linspace(3.5, 5.0, 10):
         positions[1, 1] = distance * unit.angstroms
         
         context.setPositions(positions)
+        new_context.setPositions(positions)
+
+        new_state = new_context.getState(getPositions=True, getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+
+        energy_derivs = new_state.getEnergyParameterDerivatives()
         
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
-    
-        energy_derivs = state.getEnergyParameterDerivatives()
+        print ("P.E :", new_state.getPotentialEnergy(), context.getState(getEnergy=True).getPotentialEnergy())
+        state = new_context.getState(getEnergy=True, groups=2 ** 1)
         
-        print ("P.E :", state.getPotentialEnergy())
-        
-        state = context.getState(getEnergy=True, groups=set([1]))
         print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
         
-        state = context.getState(getEnergy=True, groups=set([2]))
+        state = new_context.getState(getEnergy=True, groups=2 ** 2)
         print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
     
 
