@@ -331,10 +331,11 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
         force.setCutoffDistance(reference_force.getCutoffDistance())
         force.setSwitchingDistance(reference_force.getSwitchingDistance())
         
-        if disable_alchemical_dispersion_correction:
-            force.setUseLongRangeCorrection(False)
-        else:
-            force.setUseLongRangeCorrection(reference_force.getUseDispersionCorrection())
+        force.setUseLongRangeCorrection(False)
+        #if disable_alchemical_dispersion_correction:
+        #    force.setUseLongRangeCorrection(False)
+        #else:
+        #    force.setUseLongRangeCorrection(reference_force.getUseDispersionCorrection())
     
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
