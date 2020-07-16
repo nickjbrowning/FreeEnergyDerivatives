@@ -38,7 +38,7 @@ def test_diatomic_system():
             self.sigma = sigma
             self.epsilon = epsilon
     
-            charge = 1.0 * unit.elementary_charge
+            charge = 0.3 * unit.elementary_charge
     
             system = openmm.System()
             
@@ -89,7 +89,7 @@ def test_diatomic_system():
     context.setParameter('lambda_electrostatics', 0.0)
     
     for distance in np.linspace(3.5, 5.0, 10):
-        positions[1, 0] = distance * unit.angstroms
+        positions[1, 1] = distance * unit.angstroms
         
         context.setPositions(positions)
         
