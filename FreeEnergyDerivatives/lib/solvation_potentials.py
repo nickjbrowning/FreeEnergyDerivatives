@@ -304,7 +304,7 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
         # group 0 will be used as integration group
         force.setForceGroup(0)
         
-    force_idx, reference_force = forces.find_forces(new_system, openmm.NonbondedForce, only_one=True)
+    force_idx, reference_force = forces.find_forces(system, openmm.NonbondedForce, only_one=True)
     
     nonbonded_force = copy.deepcopy(reference_force)
     
@@ -561,6 +561,7 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
         
     # remove the original non-bonded force
     new_system.removeForce(force_idx)
+    
     # add the new non-bonded force with alchemical interactions removed
     nonbonded_force.setForceGroup(0)
     new_system.addForce(nonbonded_force)

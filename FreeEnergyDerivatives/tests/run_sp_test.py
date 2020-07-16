@@ -47,11 +47,13 @@ def test_diatomic_system():
             force.setForceGroup(0)
             force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
             
+            print (reference_force.getUseDispersionCorrection())
+            
             # Create positions.
             positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
             # Move the second particle along the x axis to be at the potential minimum.
-            positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
-            positions[2, 0] = 4.0 ** (1.0 / 6.0) * sigma
+            positions[1, 0] = 3.0 ** (1.0 / 6.0) * sigma
+            positions[2, 0] = 6.0 ** (1.0 / 6.0) * sigma
             
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
@@ -179,8 +181,8 @@ def finite_diff_test():
             # Create positions.
             positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
             # Move the second particle along the x axis to be at the potential minimum.
-            positions[1, 0] = 2.0 ** (1.0 / 6.0) * sigma
-            positions[2, 0] = 4.0 ** (1.0 / 6.0) * sigma
+            positions[1, 0] = 3.0 ** (1.0 / 6.0) * sigma
+            positions[2, 0] = 6.0 ** (1.0 / 6.0) * sigma
             
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
@@ -226,29 +228,30 @@ def finite_diff_test():
     
     print ("P.E :", state.getPotentialEnergy())
     
-    state = context.getState(getEnergy=True, groups=set([1]))
+    state = context.getState(getEnergy=True, groups=2 ** 1)
     
     print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'])
     
-    state = context.getState(getEnergy=True, groups=set([2]))
+    state = context.getState(getEnergy=True, groups=2 ** 2)
     
     print ("steric dV/dl :", energy_derivs['lambda_sterics'])
     
-    context.setParameter('lambda_sterics', 0.5 + 0.05)
+    context.setParameter('lambda_sterics', 0.5 + 0.5 * 0.005)
     
-    state1 = context.getState(getEnergy=True, groups=set([1]))
+    state1 = context.getState(getEnergy=True, groups=[2 ** 0])
     
-    context.setParameter('lambda_sterics', 0.5 - 0.05)
+    context.setParameter('lambda_sterics', 0.5 - 0.5 * 0.005)
     
-    state2 = context.getState(getEnergy=True, groups=set([1]))
+    state2 = context.getState(getEnergy=True, groups=[2 ** 0])
     
-    print ((state1.getPotentialEnergy() - state2.getPotentialEnergy()) / (2 * 0.05))
+    print (state1.getPotentialEnergy(), state2.getPotentialEnergy())
+    print ((state1.getPotentialEnergy() - state2.getPotentialEnergy()))
       
 
 if __name__ == "__main__":
     print ("Diatomic System")
     test_diatomic_system()
-    print ("Waterbox")
-    test_waterbox()
-    print ("finite diff test")
-    finite_diff_test()
+    # print ("Waterbox")
+    # test_waterbox()
+    # print ("finite diff test")
+    # finite_diff_test()
