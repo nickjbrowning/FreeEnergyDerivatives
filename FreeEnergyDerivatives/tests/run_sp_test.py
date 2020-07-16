@@ -234,15 +234,15 @@ def finite_diff_test():
     
     print ("steric dV/dl :", energy_derivs['lambda_sterics'])
     
-    context.setParameter('lambda_sterics', 0.5 + 0.005)
+    context.setParameter('lambda_sterics', 0.5 + 0.05)
     
     state1 = context.getState(getEnergy=True, groups=set([1]))
     
-    context.setParameter('lambda_sterics', 0.5 - 0.005)
+    context.setParameter('lambda_sterics', 0.5 - 0.05)
     
     state2 = context.getState(getEnergy=True, groups=set([1]))
     
-    print ((state1.getPotentialEnergy() - state2.getPotentialEnergy()) / (2 * 0.005))
+    print ((state1.getPotentialEnergy() - state2.getPotentialEnergy()) / (2 * 0.05))
       
 
 if __name__ == "__main__":
