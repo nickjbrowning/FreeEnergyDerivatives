@@ -199,7 +199,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     if (compute_solvation_response):
         # Add dV/dl energy components
-        _add_alchemical_response(new_system, reference_force, solute_indicies,
+        _add_alchemical_response(system, reference_force, solute_indicies,
                                       disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
         
     # add all particles to all custom forces...
