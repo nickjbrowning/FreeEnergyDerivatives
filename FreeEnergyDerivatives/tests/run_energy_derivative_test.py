@@ -73,7 +73,7 @@ class CustomSystem(TestSystem):
         
         force.addEnergyParameterDerivative('lambda_sterics') 
         
-        force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+        force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
         
         force.setForceGroup(0)
         
@@ -93,7 +93,7 @@ class CustomSystem(TestSystem):
         force2.addPerParticleParameter('sigma')
         force2.addPerParticleParameter('epsilon')
         
-        force2.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+        force2.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
         
         force2.setForceGroup(1)
         
