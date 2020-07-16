@@ -655,8 +655,8 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
             force.addParticle([charge])
             
     # Now restrict pairwise interactions to their respective groups
-    na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
-    na_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
+    # na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
+    # na_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
 
     # now lets handle exclusions and exceptions
     all_custom_nonbonded_forces = all_sterics_custom_nonbonded_forces + all_electrostatics_custom_nonbonded_forces
