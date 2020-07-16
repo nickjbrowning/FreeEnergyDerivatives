@@ -116,27 +116,39 @@ def test_waterbox():
     
     context = Context(system, integrator, platform)
     
-    context.setParameter('lambda_sterics', 0.0)
-    context.setParameter('lambda_electrostatics', 0.0)
-    
-    context.setPositions(positions)
-
-    state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
-
-    energy_derivs = state.getEnergyParameterDerivatives()
-    dvdle = energy_derivs['lambda_electrostatics']
-    dvdls = energy_derivs['lambda_sterics']
-    
-    deriv_state = context.getState(getEnergy=True, groups=set([1]))
-    deriv_steric = deriv_state.getPotentialEnergy()._value
-    
-    deriv_state = context.getState(getEnergy=True, groups=set([2]))
-    deriv_electrostatic = deriv_state.getPotentialEnergy()._value
-    
-    print ("electrostatic dVdl", dvdle, deriv_steric, "Diff: ", dvdle - deriv_steric)
-    print ("steric dV/dl :", dvdls, deriv_electrostatic, "Diff: ", dvdls - deriv_electrostatic)
-    print ("total dV/dl: ", dvdle + dvdls, "Diff: ", dvdle + dvdls - deriv_steric - deriv_electrostatic)
+    print ("ELECTROSTATICS")
+    for l in np.linspace(1.0, 0.0, 10):
+        context.setParameter('lambda_electrostatics', l)
         
+        context.setPositions(positions)
+    
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+    
+        energy_derivs = state.getEnergyParameterDerivatives()
+        dvdle = energy_derivs['lambda_electrostatics']
+        
+        deriv_state = context.getState(getEnergy=True, groups=set([1]))
+        deriv_steric = deriv_state.getPotentialEnergy()._value
+        
+        print ("steric dV/dl :", dvdls, deriv_electrostatic, "Diff: ", dvdls - deriv_electrostatic)
+        
+    print ("STERICS")
+    for l in np.linspace(1.0, 0.0, 10):
+        
+        context.setParameter('lambda_sterics', l)
+        
+        context.setPositions(positions)
+    
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+    
+        energy_derivs = state.getEnergyParameterDerivatives()
+        dvdls = energy_derivs['lambda_sterics']
+        
+        deriv_state = context.getState(getEnergy=True, groups=set([2]))
+        deriv_electrostatic = deriv_state.getPotentialEnergy()._value
+        
+        print ("steric dV/dl :", dvdls, deriv_electrostatic, "Diff: ", dvdls - deriv_electrostatic)
+            
 
 if __name__ == "__main__":
     print ("Diatomic System")
