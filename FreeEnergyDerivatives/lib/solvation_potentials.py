@@ -219,7 +219,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
 
         if particle_index in solute_indicies:
-            nonbonded_force.setParticleParameters(particle_index, abs(0.0 * charge), sigma, abs(0 * epsilon))
+            nonbonded_force.setParticleParameters(particle_index, 0.0, sigma, 0.0)
             
     # Now restrict pairwise interactions to their respective groups
     na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
@@ -264,7 +264,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         
         # remove this exception in original reference force
         if at_least_one_alchemical:
-            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, abs(0.0 * chargeprod), sigma, abs(0.0 * epsilon))
+            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, 0.0, sigma, 0.0)
     
     all_custom_forces = (all_custom_nonbonded_forces + all_sterics_custom_bond_forces + all_electrostatics_custom_bond_forces)
     
@@ -434,10 +434,11 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
             
     # also do the same for exceptions
     for exception_index in range(reference_force.getNumExceptions()):
-  
+        
         [iatom, jatom, chargeprod, sigma, epsilon] = reference_force.getExceptionParameters(exception_index)
 
         if sigma == 0.0 * unit.angstrom:
+            print ("YO2")
             warning_msg = 'exception %d has Lennard-Jones sigma = 0 (iatom=%d, jatom=%d, chargeprod=%s, sigma=%s, epsilon=%s); setting sigma=1A'
             logger.warning(warning_msg % (exception_index, iatom, jatom, str(chargeprod), str(sigma), str(epsilon)))
             sigma = 3.0 * unit.angstrom
@@ -464,8 +465,8 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
 
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
 
-        if particle_index in solute_indicies:
-            nonbonded_force.setParticleParameters(particle_index, abs(0.0 * charge), sigma, abs(0 * epsilon))
+        if particle_index in alchemical_atoms:
+            nonbonded_force.setParticleParameters(particle_index, 0.0, sigma, 0.0)
             
     # Now restrict pairwise interactions to their respective groups
     na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
@@ -524,7 +525,7 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
         
         # remove this exception in original reference force
         if at_least_one_alchemical:
-            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, abs(0.0 * chargeprod), sigma, abs(0.0 * epsilon))
+            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, 0.0, sigma, 0.0)
     
     all_custom_forces = (all_custom_nonbonded_forces + all_sterics_custom_bond_forces + all_electrostatics_custom_bond_forces)
     
