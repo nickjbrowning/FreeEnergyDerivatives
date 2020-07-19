@@ -221,14 +221,15 @@ for distance in np.linspace(3.5, 5.0, 10):
     state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
 
     energy_derivs = state.getEnergyParameterDerivatives()
-    
-    print ("P.E :", state.getPotentialEnergy(), "dVdl_sterics", energy_derivs['lambda_sterics'], "dVdl_electrostatics", energy_derivs['lambda_electrostatics'])
 
     state = context.getState(getEnergy=True, groups=set([1]))
     
-    print ("dV/dl_sterics:", state.getPotentialEnergy())
+    dvdl_sterics = state.getPotentialEnergy()
     
     state = context.getState(getEnergy=True, groups=set([2]))
     
+    dvdl_electrostatics = state.getPotentialEnergy()
+    
     print ("dV/dl_electrostatics:", state.getPotentialEnergy())
     
+    print ("P.E :", state.getPotentialEnergy(), "dVdl_sterics diff", energy_derivs['lambda_sterics'] - dvdl_sterics, "dVdl_electrostatics diff", energy_derivs['lambda_electrostatics'] - dvdl_electrostatics)

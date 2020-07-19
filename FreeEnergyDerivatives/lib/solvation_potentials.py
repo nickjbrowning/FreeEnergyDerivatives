@@ -205,6 +205,8 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
 
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
         
+        print (charge, sigma, epsilon)
+        
         for force in all_sterics_custom_nonbonded_forces:
             force.addParticle([sigma, epsilon])
       
