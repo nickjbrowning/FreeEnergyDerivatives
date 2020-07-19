@@ -124,7 +124,7 @@ def test_waterbox():
     system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-    integrator.setIntegrationForceGroups(set([0]))
+    integrator.setIntegrationForceGroups(set([0, 1]))
     
     context = Context(system, integrator, platform)
     
@@ -134,12 +134,12 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1]))
     
         energy_derivs = state.getEnergyParameterDerivatives()
         dvdle = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
         
-        deriv_state = context.getState(getEnergy=True, groups=set([1]))
+        deriv_state = context.getState(getEnergy=True, groups=set([2]))
         deriv_electrostatic = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_electrostatics'))
@@ -157,7 +157,7 @@ def test_waterbox():
         energy_derivs = state.getEnergyParameterDerivatives()
         dvdls = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
         
-        deriv_state = context.getState(getEnergy=True, groups=set([2]))
+        deriv_state = context.getState(getEnergy=True, groups=set([3]))
         deriv_steric = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_sterics'))
