@@ -132,46 +132,49 @@ def test_waterbox():
     
     context = Context(system, integrator, platform)
     
-    print ("ELECTROSTATICS")
-    for l in np.linspace(1.0, 0.0, 10):
-        context.setParameter('lambda_electrostatics', l)
-        
-        context.setPositions(positions)
+    decompose_energy(context, system)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
-    
-        energy_derivs = state.getEnergyParameterDerivatives()
-        print (energy_derivs.keys())
-        print (energy_derivs.values())
-        dvdle = energy_derivs['lambda_electrostatics']
-        
-        deriv_state = context.getState(getEnergy=True, groups=set([12, 13]))
-        deriv_electrostatic = deriv_state.getPotentialEnergy()._value
-        
-        print ("lambda: ", context.getParameter('lambda_electrostatics'))
-        print ("electrostatic dV/dl :", dvdle, deriv_electrostatic, "Diff: ", dvdle - deriv_electrostatic)
-    
-    context.setParameter('lambda_electrostatics', 1.0)
-    
-    print ("STERICS")
-    for l in np.linspace(1.0, 0.0, 10):
-        
-        context.setParameter('lambda_sterics', l)
-        
-        context.setPositions(positions)
-    
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
-    
-        energy_derivs = state.getEnergyParameterDerivatives()
-        print (energy_derivs.keys())
-        print (energy_derivs.values())
-        dvdls = energy_derivs['lambda_sterics']
-        
-        deriv_state = context.getState(getEnergy=True, groups=set([14, 15]))
-        deriv_steric = deriv_state.getPotentialEnergy()._value
-        
-        print ("lambda: ", context.getParameter('lambda_sterics'))
-        print("steric dV/dl :", dvdls, deriv_steric, "Diff: ", dvdls - deriv_steric)
+#     
+#     print ("ELECTROSTATICS")
+#     for l in np.linspace(1.0, 0.0, 10):
+#         context.setParameter('lambda_electrostatics', l)
+#         
+#         context.setPositions(positions)
+#     
+#         state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
+#     
+#         energy_derivs = state.getEnergyParameterDerivatives()
+#         print (energy_derivs.keys())
+#         print (energy_derivs.values())
+#         dvdle = energy_derivs['lambda_electrostatics']
+#         
+#         deriv_state = context.getState(getEnergy=True, groups=set([12, 13]))
+#         deriv_electrostatic = deriv_state.getPotentialEnergy()._value
+#         
+#         print ("lambda: ", context.getParameter('lambda_electrostatics'))
+#         print ("electrostatic dV/dl :", dvdle, deriv_electrostatic, "Diff: ", dvdle - deriv_electrostatic)
+#     
+#     context.setParameter('lambda_electrostatics', 1.0)
+#     
+#     print ("STERICS")
+#     for l in np.linspace(1.0, 0.0, 10):
+#         
+#         context.setParameter('lambda_sterics', l)
+#         
+#         context.setPositions(positions)
+#     
+#         state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
+#     
+#         energy_derivs = state.getEnergyParameterDerivatives()
+#         print (energy_derivs.keys())
+#         print (energy_derivs.values())
+#         dvdls = energy_derivs['lambda_sterics']
+#         
+#         deriv_state = context.getState(getEnergy=True, groups=set([14, 15]))
+#         deriv_steric = deriv_state.getPotentialEnergy()._value
+#         
+#         print ("lambda: ", context.getParameter('lambda_sterics'))
+#         print("steric dV/dl :", dvdls, deriv_steric, "Diff: ", dvdls - deriv_steric)
       
 
 if __name__ == "__main__":
