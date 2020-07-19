@@ -167,7 +167,7 @@ def test_waterbox():
 if __name__ == "__main__":
     print ("Diatomic System")
     test_diatomic_system()
-    print ("Waterbox")
-    test_waterbox()
+    # print ("Waterbox")
+    # test_waterbox()
     # print ("finite diff test")
     # finite_diff_test()
