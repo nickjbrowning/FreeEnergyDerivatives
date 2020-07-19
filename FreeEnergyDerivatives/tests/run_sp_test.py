@@ -81,7 +81,7 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    new_system = sp.create_alchemical_system(system, [0, 1], compute_solvation_response=True)
+    new_system = sp.create_alchemical_system(system, [1], compute_solvation_response=True)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
@@ -92,6 +92,7 @@ def test_diatomic_system():
     
     positions[1, 1] = 4.5 * unit.angstroms
     
+    print (positions)
     context.setPositions(positions)
     
     sp.decompose_energy(context, new_system)
