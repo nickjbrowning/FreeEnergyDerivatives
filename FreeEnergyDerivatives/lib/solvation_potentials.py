@@ -586,6 +586,8 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
 def _get_alchemical_response(system, reference_force, solute_indicies, disable_alchemical_dispersion_correction=False,
                                        softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=2, softcore_b=2, group_id_start=10):
     
+    print ("SOLUTE RESPONSE INDEXES: ", solute_indicies)
+    
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
     
