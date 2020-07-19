@@ -230,7 +230,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     aa_electrostatics_custom_nonbonded_force.addInteractionGroup(alchemical_atoms, alchemical_atoms)
     
     # now lets handle exclusions and exceptions
-    all_custom_nonbonded_forces = all_sterics_custom_nonbonded_forces + all_electrostatics_custom_nonbonded_forces
+    all_custom_nonbonded_forces = all_electrostatics_custom_nonbonded_forces + all_sterics_custom_nonbonded_forces 
     
     for exception_index in range(reference_force.getNumExceptions()):
     
@@ -664,7 +664,8 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
     # na_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
 
     # now lets handle exclusions and exceptions
-    all_custom_nonbonded_forces = all_sterics_custom_nonbonded_forces + all_electrostatics_custom_nonbonded_forces
+    
+    all_custom_nonbonded_forces = all_electrostatics_custom_nonbonded_forces + all_sterics_custom_nonbonded_forces
     
     for exception_index in range(reference_force.getNumExceptions()):
     
@@ -687,7 +688,7 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
             if is_exception_chargeprod:
                 na_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
     
-    all_custom_forces = (all_custom_nonbonded_forces + all_sterics_custom_bond_forces + all_electrostatics_custom_bond_forces)
+    all_custom_forces = (all_electrostatics_custom_nonbonded_forces + all_electrostatics_custom_bond_forces + all_sterics_custom_nonbonded_forces + all_sterics_custom_bond_forces)
     
     def add_global_parameters(force):
         force.addGlobalParameter('softcore_alpha', softcore_alpha)
