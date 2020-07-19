@@ -134,7 +134,7 @@ def test_waterbox():
     context.setPositions(positions)
     
     context.setParameter('lambda_electrostatics', 0.8)
-    context.setParameter('lambda_sterics', 0.0)
+    context.setParameter('lambda_sterics', 0.8)
     
     sp.decompose_energy(context, system)
     
