@@ -46,7 +46,6 @@ def test_diatomic_system():
             
             force.setForceGroup(0)
             force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
-            print (force.getUseSwitchingFunction())
             
             # Create positions.
             positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
@@ -134,14 +133,14 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1]))
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1})
     
         energy_derivs = state.getEnergyParameterDerivatives()
         print (energy_derivs.keys())
         print (energy_derivs.values())
         dvdle = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
         
-        deriv_state = context.getState(getEnergy=True, groups=set([2]))
+        deriv_state = context.getState(getEnergy=True, groups={2})
         deriv_electrostatic = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_electrostatics'))
@@ -154,14 +153,14 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1]))
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1})
     
         energy_derivs = state.getEnergyParameterDerivatives()
         print (energy_derivs.keys())
         print (energy_derivs.values())
         dvdls = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
         
-        deriv_state = context.getState(getEnergy=True, groups=set([3]))
+        deriv_state = context.getState(getEnergy=True, groups={3})
         deriv_steric = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_sterics'))
