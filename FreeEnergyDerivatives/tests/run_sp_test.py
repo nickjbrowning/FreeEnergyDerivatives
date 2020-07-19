@@ -94,25 +94,6 @@ def test_diatomic_system():
     context.setPositions(positions)
     
     sp.decompose_energy(context, new_system)
-    
-#     for distance in np.linspace(3.5, 5.0, 10):
-#         positions[1, 1] = distance * unit.angstroms
-#         
-#         context.setPositions(positions)
-#         new_context.setPositions(positions)
-# 
-#         new_state = new_context.getState(getPositions=True, getEnergy=True, getParameterDerivatives=True, groups=set([0]))
-# 
-#         energy_derivs = new_state.getEnergyParameterDerivatives()
-#         
-#         print ("P.E :", new_state.getPotentialEnergy(), context.getState(getEnergy=True).getPotentialEnergy())
-#         
-#         state = new_context.getState(getEnergy=True, groups=2 ** 1)
-#         print ("electrostatic dVdl", energy_derivs['lambda_electrostatics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_electrostatics'] - state.getPotentialEnergy()._value)
-#         
-#         state = new_context.getState(getEnergy=True, groups=2 ** 2)
-#         print ("steric dV/dl :", energy_derivs['lambda_sterics'], state.getPotentialEnergy(), "Diff: ", energy_derivs['lambda_sterics'] - state.getPotentialEnergy()._value)
-#     
 
 
 def test_waterbox():
@@ -137,54 +118,66 @@ def test_waterbox():
     context.setParameter('lambda_sterics', 0.8)
     
     sp.decompose_energy(context, system)
+
     
-#     
-#     print ("ELECTROSTATICS")
-#     for l in np.linspace(1.0, 0.0, 10):
-#         context.setParameter('lambda_electrostatics', l)
-#         
-#         context.setPositions(positions)
-#     
-#         state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
-#     
-#         energy_derivs = state.getEnergyParameterDerivatives()
-#         print (energy_derivs.keys())
-#         print (energy_derivs.values())
-#         dvdle = energy_derivs['lambda_electrostatics']
-#         
-#         deriv_state = context.getState(getEnergy=True, groups=set([12, 13]))
-#         deriv_electrostatic = deriv_state.getPotentialEnergy()._value
-#         
-#         print ("lambda: ", context.getParameter('lambda_electrostatics'))
-#         print ("electrostatic dV/dl :", dvdle, deriv_electrostatic, "Diff: ", dvdle - deriv_electrostatic)
-#     
-#     context.setParameter('lambda_electrostatics', 1.0)
-#     
-#     print ("STERICS")
-#     for l in np.linspace(1.0, 0.0, 10):
-#         
-#         context.setParameter('lambda_sterics', l)
-#         
-#         context.setPositions(positions)
-#     
-#         state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
-#     
-#         energy_derivs = state.getEnergyParameterDerivatives()
-#         print (energy_derivs.keys())
-#         print (energy_derivs.values())
-#         dvdls = energy_derivs['lambda_sterics']
-#         
-#         deriv_state = context.getState(getEnergy=True, groups=set([14, 15]))
-#         deriv_steric = deriv_state.getPotentialEnergy()._value
-#         
-#         print ("lambda: ", context.getParameter('lambda_sterics'))
-#         print("steric dV/dl :", dvdls, deriv_steric, "Diff: ", dvdls - deriv_steric)
-      
+def test_solvated_ethanol():
+    
+    def collect_solute_indexes(topology):
+        soluteIndices = []
+        for res in topology.residues():
+            resname = res.name.upper()
+            if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
+                for atom in res.atoms():
+                    soluteIndices.append(atom.index)
+        return soluteIndices
+
+    platform = openmm.Platform.getPlatformByName('CUDA')
+    platform.setPropertyDefaultValue('Precision', 'mixed')
+
+    ligand_mol = Molecule.from_file('ethanol.sdf', file_format='sdf')
+    
+    forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
+    
+    system_generator = SystemGenerator(
+        forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
+        small_molecule_forcefield='gaff-2.11',
+        molecules=[ligand_mol],
+        forcefield_kwargs=forcefield_kwargs)
+
+    ligand_pdb = PDBFile('ethanol.pdb')
+    
+    modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
+    
+    modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
+    
+    system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
+            nonbondedCutoff=9.0 * unit.angstroms, constraints=HBonds, switchDistance=7.5 * unit.angstroms)
+    
+    solute_indexes = collect_solute_indexes(modeller.topology)
+
+    system = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
+    
+    for force in system.getForces():
+        print (force.__class__.__name__, force.getForceGroup())
+        
+    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
+    integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})
+    
+    context = Context(system, integrator, platform)
+    context.setPositions(positions)
+    
+    context.setParameter('lambda_electrostatics', 0.8)
+    context.setParameter('lambda_sterics', 0.8)
+    
+    sp.decompose_energy(context, system)
+
 
 if __name__ == "__main__":
     print ("Diatomic System")
     test_diatomic_system()
     print ("Waterbox")
     test_waterbox()
+    print ("Solvated Ethanol Test")
+    test_solvated_ethanol()
     # print ("finite diff test")
     # finite_diff_test()
