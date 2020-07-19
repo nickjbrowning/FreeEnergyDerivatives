@@ -120,7 +120,7 @@ def test_waterbox():
     
     system, positions, topology = waterbox.system, waterbox.positions, waterbox.topology
     
-    system = sp.create_alchemical_system(system, [0, 1, 2], compute_solvation_response=True, disable_alchemical_dispersion_correction=True)
+    system = sp.create_alchemical_system(system, [0, 1, 2], compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
     print (system.getNumForces())
     
