@@ -132,7 +132,7 @@ def test_waterbox():
     
     context = Context(system, integrator, platform)
     
-    decompose_energy(context, system)
+    sp.decompose_energy(context, system)
     
 #     
 #     print ("ELECTROSTATICS")
