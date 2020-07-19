@@ -121,7 +121,7 @@ def test_waterbox():
     
     system, positions, topology = waterbox.system, waterbox.positions, waterbox.topology
     
-    system = sp.create_alchemical_system2(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+    system = sp.create_alchemical_system2(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True, disable_alchemical_dispersion_correction=True)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     integrator.setIntegrationForceGroups(set([0]))
@@ -167,7 +167,7 @@ def test_waterbox():
 if __name__ == "__main__":
     print ("Diatomic System")
     test_diatomic_system()
-    # print ("Waterbox")
-    # test_waterbox()
+    print ("Waterbox")
+    test_waterbox()
     # print ("finite diff test")
     # finite_diff_test()
