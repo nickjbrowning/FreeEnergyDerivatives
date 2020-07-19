@@ -131,6 +131,7 @@ def test_waterbox():
     integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})
     
     context = Context(system, integrator, platform)
+    context.setPositions(positions)
     
     sp.decompose_energy(context, system)
     
