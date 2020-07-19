@@ -81,21 +81,20 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    new_system = sp.create_alchemical_system(system, [0, 1], compute_solvation_response=True, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6.0)
+    new_system = sp.create_alchemical_system(system, [2], compute_solvation_response=True, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6.0)
     
-    new_integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds) 
+    integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
-    new_context = Context(new_system, new_integrator, platform)
+    context = Context(new_system, integrator, platform)
     
-    new_context.setParameter('lambda_sterics', 1.0)
-    new_context.setParameter('lambda_electrostatics', 1.0)
+    context.setParameter('lambda_sterics', 1.0)
+    context.setParameter('lambda_electrostatics', 1.0)
     
     positions[1, 1] = 4.5 * unit.angstroms
     
-    new_context.setPositions(positions)
+    context.setPositions(positions)
     
-    sp.decompose_energy(new_context, new_system)
+    sp.decompose_energy(context, new_system)
     
 #     for distance in np.linspace(3.5, 5.0, 10):
 #         positions[1, 1] = distance * unit.angstroms

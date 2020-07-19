@@ -602,27 +602,27 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
     
     delectrostatics_energy_expression = dexceptions_electrostatics_energy_expression + delectrostatics_mixing_rules
     
-    na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, dsterics_energy_expression,
+    dna_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, dsterics_energy_expression,
                                                     True, 'lambda_sterics', False)
     
-    all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force]
+    dall_sterics_custom_nonbonded_forces = [dna_sterics_custom_nonbonded_force]
     
     na_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, delectrostatics_energy_expression,
                                                             True, 'lambda_electrostatics', False)
-    all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force]
+    dall_electrostatics_custom_nonbonded_forces = [dna_electrostatics_custom_nonbonded_force]
     
     # CustomBondForces represent exceptions not picked up by exclusions 
     na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_sterics_energy_expression,
                                                 True, 'lambda_sterics', False)
     
-    all_sterics_custom_bond_forces = [na_sterics_custom_bond_force]
+    dall_sterics_custom_bond_forces = [dna_sterics_custom_bond_force]
     
     na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_electrostatics_energy_expression,
                                                        True, 'lambda_electrostatics', False)
    
-    all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force]
+    dall_electrostatics_custom_bond_forces = [dna_electrostatics_custom_bond_force]
     
-    for force in all_electrostatics_custom_nonbonded_forces:
+    for force in dall_electrostatics_custom_nonbonded_forces:
         force.addPerParticleParameter("charge")
         # force.addPerParticleParameter("sigma") 
         force.setUseSwitchingFunction(False)
@@ -632,13 +632,13 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
         
         force.setForceGroup(group_id_start)
         
-    for force in all_electrostatics_custom_bond_forces:
+    for force in dall_electrostatics_custom_bond_forces:
         force.addPerBondParameter("chargeprod")  # charge product
         # force.addPerBondParameter("sigma") 
         
         force.setForceGroup(group_id_start + 1)
         
-    for force in all_sterics_custom_nonbonded_forces:
+    for force in dall_sterics_custom_nonbonded_forces:
         force.addPerParticleParameter("sigma")
         force.addPerParticleParameter("epsilon") 
         force.setUseSwitchingFunction(reference_force.getUseSwitchingFunction())
@@ -655,7 +655,7 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
         
         force.setForceGroup(group_id_start + 2)
         
-    for force in all_sterics_custom_bond_forces:
+    for force in dall_sterics_custom_bond_forces:
         force.addPerBondParameter("sigma")  
         force.addPerBondParameter("epsilon")
         
@@ -666,10 +666,10 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
 
         [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
       
-        for force in all_sterics_custom_nonbonded_forces:
+        for force in dall_sterics_custom_nonbonded_forces:
             force.addParticle([sigma, epsilon])
       
-        for force in all_electrostatics_custom_nonbonded_forces:
+        for force in dall_electrostatics_custom_nonbonded_forces:
             force.addParticle([charge])
             
     # Now restrict pairwise interactions to their respective groups
@@ -678,14 +678,14 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
 
     # now lets handle exclusions and exceptions
     
-    all_custom_nonbonded_forces = all_electrostatics_custom_nonbonded_forces + all_sterics_custom_nonbonded_forces
+    dall_custom_nonbonded_forces = dall_electrostatics_custom_nonbonded_forces + dall_sterics_custom_nonbonded_forces
     
     for exception_index in range(reference_force.getNumExceptions()):
     
         iatom, jatom, chargeprod, sigma, epsilon = reference_force.getExceptionParameters(exception_index)
     
         # All non-bonded forces must have same number of exceptions/exclusions on CUDA
-        for force in all_custom_nonbonded_forces:
+        for force in dall_custom_nonbonded_forces:
             force.addExclusion(iatom, jatom)
 
         is_exception_epsilon = abs(epsilon.value_in_unit_system(unit.md_unit_system)) > 0.0
@@ -697,13 +697,13 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
 
         if only_one_alchemical:
             if is_exception_epsilon:
-                na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
+                dna_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
             if is_exception_chargeprod:
-                na_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
+                dna_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
     
-    all_custom_forces = (all_electrostatics_custom_nonbonded_forces + all_electrostatics_custom_bond_forces + all_sterics_custom_nonbonded_forces + all_sterics_custom_bond_forces)
+    dall_custom_forces = (dall_electrostatics_custom_nonbonded_forces + dall_electrostatics_custom_bond_forces + dall_sterics_custom_nonbonded_forces + dall_sterics_custom_bond_forces)
     
-    return all_custom_forces
+    return dall_custom_forces
 
         
 def decompose_energy(context, system, include_derivatives=True):
