@@ -120,13 +120,6 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     electrostatics_energy_expression = exceptions_electrostatics_energy_expression + electrostatics_mixing_rules
     
-    na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
-                                                    True, 'lambda_sterics')
-    aa_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
-                                                    annihilate_sterics, 'lambda_sterics')
-    
-    all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force, aa_sterics_custom_nonbonded_force]
-    
     na_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, electrostatics_energy_expression,
                                                             True, 'lambda_electrostatics')
     
@@ -135,6 +128,20 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force, aa_electrostatics_custom_nonbonded_force]
     
+    na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
+                                                       True, 'lambda_electrostatics')
+    aa_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
+                                                       annihilate_electrostatics, 'lambda_electrostatics')
+    
+    all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force, aa_electrostatics_custom_bond_force]
+    
+    na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
+                                                    True, 'lambda_sterics')
+    aa_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
+                                                    annihilate_sterics, 'lambda_sterics')
+    
+    all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force, aa_sterics_custom_nonbonded_force]
+    
     # CustomBondForces represent exceptions not picked up by exclusions 
     na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_sterics_energy_expression,
                                                 True, 'lambda_sterics')
@@ -142,13 +149,6 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
                                                 annihilate_sterics, 'lambda_sterics')
     
     all_sterics_custom_bond_forces = [na_sterics_custom_bond_force, aa_sterics_custom_bond_force]
-    
-    na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
-                                                       True, 'lambda_electrostatics')
-    aa_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
-                                                       annihilate_electrostatics, 'lambda_electrostatics')
-    
-    all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force, aa_electrostatics_custom_bond_force]
 
     for force in all_sterics_custom_nonbonded_forces:
         force.addPerParticleParameter("sigma")
@@ -707,6 +707,12 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
 def decompose_energy(context, system, include_derivatives=True):
     
     print ("NUM_FORCES: ", system.getNumForces())
+    
+    def getGlobalParameterInfo(force):
+        s = "GLOBALPARAMS:"
+        for i in range(force.getNumGlobalParameters()):
+            s += " " + force.getGlobalParameterName(v)
+        return s
 
     def get_forces_with_group(system, group_id):
         forces = system.getForces()
@@ -727,6 +733,7 @@ def decompose_energy(context, system, include_derivatives=True):
             print ("-Force Classes:")
             for v in forces:
                 print (v.__class__.__name__)
+                print (getGlobalParameterInfo(v))
             
             state = context.getState(getEnergy=True, getParameterDerivatives=include_derivatives, groups=set([i]))
             
