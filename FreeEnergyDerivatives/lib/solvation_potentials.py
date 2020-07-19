@@ -6,6 +6,7 @@ from openmmtools.constants import ONE_4PI_EPS0
 from openmmtools import forces
 import numpy as np
 import copy
+from lxml.ElementInclude import include
 
 
 def _get_sterics_expression():
@@ -107,7 +108,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     if (compute_solvation_response):
         # Add dV/dl energy components
         _add_alchemical_response(new_system, reference_force, solute_indicies,
-                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
+                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b, 10)
         
     nonbonded_force = copy.deepcopy(reference_force)
     
@@ -266,7 +267,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         if at_least_one_alchemical:
             nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, 0.0, sigma, 0.0)
     
-    all_custom_forces = (all_custom_nonbonded_forces + all_sterics_custom_bond_forces + all_electrostatics_custom_bond_forces)
+    all_custom_forces = (all_electrostatics_custom_nonbonded_forces + all_electrostatics_custom_bond_forces + all_sterics_custom_nonbonded_forces + all_sterics_custom_bond_forces)
     
     def add_global_parameters(force):
         force.addGlobalParameter('softcore_alpha', softcore_alpha)
@@ -277,9 +278,9 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         force.addGlobalParameter('softcore_n', softcore_n)
     
     # add all forces representing alchemical interactions
-    for force in all_custom_forces:
+    for i, force in enumerate(all_custom_forces):
         add_global_parameters(force)
-        force.setForceGroup(0)  # integration force group
+        force.setForceGroup(i + 1) 
         new_system.addForce(force)
     
     # remove the original non-bonded force
@@ -572,7 +573,7 @@ def create_alchemical_system2(system, solute_indicies, compute_solvation_respons
 
 
 def _add_alchemical_response(system, reference_force, solute_indicies, disable_alchemical_dispersion_correction=False,
-                                       softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=2, softcore_b=2):
+                                       softcore_alpha=0.4, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6, softcore_n=6, softcore_a=2, softcore_b=2, group_id_start=10):
     
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
@@ -604,7 +605,23 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
                                                        True, 'lambda_electrostatics', False)
    
     all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force]
-
+    
+    for force in all_electrostatics_custom_nonbonded_forces:
+        force.addPerParticleParameter("charge")
+        # force.addPerParticleParameter("sigma") 
+        force.setUseSwitchingFunction(False)
+        force.setCutoffDistance(reference_force.getCutoffDistance())
+        force.setUseLongRangeCorrection(False)  
+        force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
+        
+        force.setForceGroup(group_id_start)
+        
+    for force in all_electrostatics_custom_bond_forces:
+        force.addPerBondParameter("chargeprod")  # charge product
+        # force.addPerBondParameter("sigma") 
+        
+        force.setForceGroup(group_id_start + 1)
+        
     for force in all_sterics_custom_nonbonded_forces:
         force.addPerParticleParameter("sigma")
         force.addPerParticleParameter("epsilon") 
@@ -620,29 +637,13 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
     
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
-        force.setForceGroup(2)
+        force.setForceGroup(group_id_start + 2)
         
     for force in all_sterics_custom_bond_forces:
         force.addPerBondParameter("sigma")  
         force.addPerBondParameter("epsilon")
         
-        force.setForceGroup(2)
-        
-    for force in all_electrostatics_custom_nonbonded_forces:
-        force.addPerParticleParameter("charge")
-        # force.addPerParticleParameter("sigma") 
-        force.setUseSwitchingFunction(False)
-        force.setCutoffDistance(reference_force.getCutoffDistance())
-        force.setUseLongRangeCorrection(False)  
-        force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
-        
-        force.setForceGroup(1)
-        
-    for force in all_electrostatics_custom_bond_forces:
-        force.addPerBondParameter("chargeprod")  # charge product
-        # force.addPerBondParameter("sigma") 
-        
-        force.setForceGroup(1)
+        force.setForceGroup(group_id_start + 3)
     
     # add all particles to all custom forces...
     for particle_index in range(reference_force.getNumParticles()):
@@ -697,3 +698,35 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
     for force in all_custom_forces:
         add_global_parameters(force)
         system.addForce(force)
+
+        
+def decompose_energy(context, system, include_derivatives=True):
+    
+    print ("NUM_FORCES: " + system.getNumForces())
+
+    def get_forces_with_group(system, group_id):
+        forces = system.getForces()
+        
+        force_list = []
+        
+        for force in forces:
+            if(force.getForceGroup() == group_id):
+                force_list.append(force)
+        
+        return force_list
+            
+    for i in range(0, 32):
+        forces = get_forces_with_group(system, i)
+        
+        if (len(forces) > 0):
+            print ("FORCE GROUP:", i)
+            state = context.getState(getEnergy, getEnergyParameterDerivatives=include_derivatives, groups=set([i]))
+            
+            print ("-PE: " + state.getPotentialEnergy())
+            
+            if (include_derivatives):
+                energy_derivs = state.getEnergyParameterDerivatives()
+                print ("-Derivatives:")
+                print (energy_derivs.keys())
+                print (energy_derivs.values())
+    
