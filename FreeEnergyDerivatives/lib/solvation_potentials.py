@@ -61,7 +61,7 @@ def _get_electrostatics_expression_derivative(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
-    drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
+    drdl = 'drdl = softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
     
     dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
     dexceptions_electrostatics_energy_expression += '+ ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(-1.0*reff_electrostatics^(-2.0)*drdl + 2*k_rf*reff_electrostatics*drdl);'
@@ -729,7 +729,6 @@ def decompose_energy(context, system, include_derivatives=True):
         forces = get_forces_with_group(system, i)
         
         if (len(forces) > 0):
-            print ('------')
             print ("FORCE GROUP:", i, "num_forces_with_group:", len(forces))
             print ("-Force Classes:")
             for v in forces:
