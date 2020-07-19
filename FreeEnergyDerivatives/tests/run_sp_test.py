@@ -93,6 +93,7 @@ def test_diatomic_system():
     positions[1, 1] = 4.5 * unit.angstroms
     
     print (positions)
+    print (np.linalg.norm(positions, axis=0))
     context.setPositions(positions)
     
     sp.decompose_energy(context, new_system)
