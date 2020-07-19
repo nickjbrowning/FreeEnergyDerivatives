@@ -122,6 +122,11 @@ def test_waterbox():
     
     system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
+    print (system.getNumForces())
+    
+    for force in system.getForces():
+        print (force.__class__.__name__, force.getForceGroup())
+        
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})
     
