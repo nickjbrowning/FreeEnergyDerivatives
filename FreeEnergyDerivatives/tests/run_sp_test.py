@@ -93,7 +93,7 @@ def test_diatomic_system():
     
     positions[1, 1] = 4.5 * unit.angstroms
     
-    context.setPositions(positions)
+    new_context.setPositions(positions)
     
     sp.decompose_energy(new_context, new_system)
     
