@@ -732,11 +732,12 @@ def decompose_energy(context, system, include_derivatives=True):
         
         if (len(forces) > 0):
             print ("FORCE GROUP:", i, "num_forces_with_group:", len(forces))
-            print ("-Force Classes:")
+            print (">>Force Classes:")
             for v in forces:
-                print (v.__class__.__name__)
-                print (getGlobalParameterInfo(v))
-            
+                print (">>", v.__class__.__name__)
+                print (">>", getGlobalParameterInfo(v))
+                print (">>", v.getEnergyFunction())
+            print (">>")
             state = context.getState(getEnergy=True, getParameterDerivatives=include_derivatives, groups=set([i]))
             
             print ("-PE: ", state.getPotentialEnergy())
