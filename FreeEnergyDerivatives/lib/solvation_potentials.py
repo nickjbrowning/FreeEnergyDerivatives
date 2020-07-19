@@ -594,30 +594,30 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
     alchemical_atoms = set(solute_indicies)
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
     
-    sterics_mixing_roles, exceptions_sterics_energy_expression = _get_sterics_expression_derivative()
+    dsterics_mixing_roles, dexceptions_sterics_energy_expression = _get_sterics_expression_derivative()
     
-    sterics_energy_expression = exceptions_sterics_energy_expression + sterics_mixing_roles
+    dsterics_energy_expression = dexceptions_sterics_energy_expression + dsterics_mixing_roles
     
-    electrostatics_mixing_rules, exceptions_electrostatics_energy_expression = _get_electrostatics_expression_derivative(reference_force)
+    delectrostatics_mixing_rules, dexceptions_electrostatics_energy_expression = _get_electrostatics_expression_derivative(reference_force)
     
-    electrostatics_energy_expression = exceptions_electrostatics_energy_expression + electrostatics_mixing_rules
+    delectrostatics_energy_expression = dexceptions_electrostatics_energy_expression + delectrostatics_mixing_rules
     
-    na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
+    na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, dsterics_energy_expression,
                                                     True, 'lambda_sterics', False)
     
     all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force]
     
-    na_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, electrostatics_energy_expression,
+    na_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, delectrostatics_energy_expression,
                                                             True, 'lambda_electrostatics', False)
     all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force]
     
     # CustomBondForces represent exceptions not picked up by exclusions 
-    na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_sterics_energy_expression,
+    na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_sterics_energy_expression,
                                                 True, 'lambda_sterics', False)
     
     all_sterics_custom_bond_forces = [na_sterics_custom_bond_force]
     
-    na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
+    na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_electrostatics_energy_expression,
                                                        True, 'lambda_electrostatics', False)
    
     all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force]
