@@ -269,6 +269,9 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     all_custom_forces = (all_electrostatics_custom_nonbonded_forces + all_electrostatics_custom_bond_forces + all_sterics_custom_nonbonded_forces + all_sterics_custom_bond_forces)
     
+    names = ["na_electrostatics_nbf", "aa_electrostatics_nbf", "na_electrostatics_bf", "aa_electrostatics_bf",
+             "na_sterics_nbf", "aa_sterics_nbf", "na_sterics_bf", "aa_sterics_bf" ]
+
     def add_global_parameters(force):
         force.addGlobalParameter('softcore_alpha', softcore_alpha)
         force.addGlobalParameter('softcore_beta', softcore_beta)
@@ -702,7 +705,7 @@ def _add_alchemical_response(system, reference_force, solute_indicies, disable_a
         
 def decompose_energy(context, system, include_derivatives=True):
     
-    print ("NUM_FORCES: " + system.getNumForces())
+    print ("NUM_FORCES: ", system.getNumForces())
 
     def get_forces_with_group(system, group_id):
         forces = system.getForces()
@@ -719,10 +722,10 @@ def decompose_energy(context, system, include_derivatives=True):
         forces = get_forces_with_group(system, i)
         
         if (len(forces) > 0):
-            print ("FORCE GROUP:", i)
-            state = context.getState(getEnergy, getEnergyParameterDerivatives=include_derivatives, groups=set([i]))
+            print ("FORCE GROUP:", "num_forces_with_group:", len(forces))
+            state = context.getState(getEnergy=True, getParameterDerivatives=include_derivatives, groups=set([i]))
             
-            print ("-PE: " + state.getPotentialEnergy())
+            print ("-PE: ", state.getPotentialEnergy())
             
             if (include_derivatives):
                 energy_derivs = state.getEnergyParameterDerivatives()
