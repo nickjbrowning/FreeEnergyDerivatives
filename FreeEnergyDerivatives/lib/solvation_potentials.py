@@ -711,7 +711,7 @@ def decompose_energy(context, system, include_derivatives=True):
     def getGlobalParameterInfo(force):
         s = "GLOBALPARAMS:"
         for i in range(force.getNumGlobalParameters()):
-            s += " " + str(force.getGlobalParameterName(v))
+            s += " " + str(force.getGlobalParameterName(i))
         return s
 
     def get_forces_with_group(system, group_id):
