@@ -104,12 +104,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         force.setForceGroup(0)
         
     force_idx, reference_force = forces.find_forces(new_system, openmm.NonbondedForce, only_one=True)
-    
-    if (compute_solvation_response):
-        # Add dV/dl energy components
-        _add_alchemical_response(new_system, reference_force, solute_indicies,
-                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b, 10)
-        
+
     nonbonded_force = copy.deepcopy(reference_force)
     
     sterics_mixing_roles, exceptions_sterics_energy_expression = _get_sterics_expression()
@@ -257,7 +252,6 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         # and non-alchemical particles using a single custom bond.
         
         elif only_one_alchemical:
-            print ("ONLY ONE")
             if is_exception_epsilon:
                 na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
             if is_exception_chargeprod:
@@ -287,10 +281,16 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         force.setForceGroup(i + 1) 
         new_system.addForce(force)
     
+    if (compute_solvation_response):
+        # Add dV/dl energy components
+        _add_alchemical_response(new_system, reference_force, solute_indicies,
+                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b, 10)
+        
     # remove the original non-bonded force
     new_system.removeForce(force_idx)
     # add the new non-bonded force with alchemical interactions removed
     nonbonded_force.setForceGroup(0)
+    
     new_system.addForce(nonbonded_force)
     
     return new_system
