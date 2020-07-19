@@ -704,7 +704,7 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
             if is_exception_chargeprod:
                 dna_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
     
-    dall_custom_forces = (dall_electrostatics_custom_nonbonded_forces + dall_electrostatics_custom_bond_forces + dall_sterics_custom_nonbonded_forces + dall_sterics_custom_bond_forces)
+    dall_custom_forces = [dna_electrostatics_custom_nonbonded_force, dna_electrostatics_custom_bond_force, dna_sterics_custom_nonbonded_force, dna_sterics_custom_bond_force]
     
     return dall_custom_forces
 

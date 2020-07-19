@@ -123,7 +123,7 @@ def test_waterbox():
     system = sp.create_alchemical_system(system, [0, 1, 2], softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-    integrator.setIntegrationForceGroups(set([0, 1]))
+    integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})
     
     context = Context(system, integrator, platform)
     
@@ -133,14 +133,14 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1})
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1, 2, 3, 4, 5, 6, 7, 8})
     
         energy_derivs = state.getEnergyParameterDerivatives()
         print (energy_derivs.keys())
         print (energy_derivs.values())
-        dvdle = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
+        dvdle = energy_derivs['lambda_electrostatics']
         
-        deriv_state = context.getState(getEnergy=True, groups={2})
+        deriv_state = context.getState(getEnergy=True, groups={10, 11})
         deriv_electrostatic = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_electrostatics'))
@@ -153,14 +153,14 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1})
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1, 2, 3, 4, 5, 6, 7, 8})
     
         energy_derivs = state.getEnergyParameterDerivatives()
         print (energy_derivs.keys())
         print (energy_derivs.values())
-        dvdls = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
+        dvdls = energy_derivs['lambda_sterics']
         
-        deriv_state = context.getState(getEnergy=True, groups={3})
+        deriv_state = context.getState(getEnergy=True, groups={12, 13})
         deriv_steric = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_sterics'))
@@ -170,7 +170,7 @@ def test_waterbox():
 if __name__ == "__main__":
     print ("Diatomic System")
     test_diatomic_system()
-    # print ("Waterbox")
-    # test_waterbox()
+    print ("Waterbox")
+    test_waterbox()
     # print ("finite diff test")
     # finite_diff_test()
