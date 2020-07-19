@@ -722,7 +722,7 @@ def decompose_energy(context, system, include_derivatives=True):
         forces = get_forces_with_group(system, i)
         
         if (len(forces) > 0):
-            print ("FORCE GROUP:", "num_forces_with_group:", len(forces))
+            print ("FORCE GROUP:", i, "num_forces_with_group:", len(forces))
             
             state = context.getState(getEnergy=True, getParameterDerivatives=include_derivatives, groups=set([i]))
             
