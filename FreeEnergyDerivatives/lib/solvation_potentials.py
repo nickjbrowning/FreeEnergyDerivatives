@@ -255,7 +255,9 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
 
         # When this is a single region we model the exception between alchemical
         # and non-alchemical particles using a single custom bond.
+        
         elif only_one_alchemical:
+            print ("ONLY ONE")
             if is_exception_epsilon:
                 na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
             if is_exception_chargeprod:
