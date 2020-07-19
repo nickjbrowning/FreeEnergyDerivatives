@@ -736,7 +736,8 @@ def decompose_energy(context, system, include_derivatives=True):
             for v in forces:
                 print (">>", v.__class__.__name__)
                 print (">>", getGlobalParameterInfo(v))
-                print (">>", v.getEnergyFunction())
+                if ("Custom" in v.__class__.__name__):
+                    print (">>", v.getEnergyFunction())
             print (">>")
             state = context.getState(getEnergy=True, getParameterDerivatives=include_derivatives, groups=set([i]))
             
