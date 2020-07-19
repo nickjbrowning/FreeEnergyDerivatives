@@ -729,6 +729,7 @@ def decompose_energy(context, system, include_derivatives=True):
         forces = get_forces_with_group(system, i)
         
         if (len(forces) > 0):
+            print ('------')
             print ("FORCE GROUP:", i, "num_forces_with_group:", len(forces))
             print ("-Force Classes:")
             for v in forces:
@@ -744,4 +745,5 @@ def decompose_energy(context, system, include_derivatives=True):
                 print ("-Derivatives:")
                 print (energy_derivs.keys())
                 print (energy_derivs.values())
+            print ("------")
     
