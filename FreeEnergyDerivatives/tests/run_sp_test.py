@@ -138,14 +138,14 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1, 2, 3, 4, 5, 6, 7, 8})
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
     
         energy_derivs = state.getEnergyParameterDerivatives()
         print (energy_derivs.keys())
         print (energy_derivs.values())
         dvdle = energy_derivs['lambda_electrostatics']
         
-        deriv_state = context.getState(getEnergy=True, groups={12, 13})
+        deriv_state = context.getState(getEnergy=True, groups=set([12, 13]))
         deriv_electrostatic = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_electrostatics'))
@@ -158,14 +158,14 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups={0, 1, 2, 3, 4, 5, 6, 7, 8})
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1, 2, 3, 4, 5, 6, 7, 8]))
     
         energy_derivs = state.getEnergyParameterDerivatives()
         print (energy_derivs.keys())
         print (energy_derivs.values())
         dvdls = energy_derivs['lambda_sterics']
         
-        deriv_state = context.getState(getEnergy=True, groups={14, 15})
+        deriv_state = context.getState(getEnergy=True, groups=set([14, 15]))
         deriv_steric = deriv_state.getPotentialEnergy()._value
         
         print ("lambda: ", context.getParameter('lambda_sterics'))
