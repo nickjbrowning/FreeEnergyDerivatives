@@ -221,6 +221,8 @@ for distance in np.linspace(3.5, 5.0, 10):
     state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
 
     energy_derivs = state.getEnergyParameterDerivatives()
+    
+    print (energy_derivs)
 
     state = context.getState(getEnergy=True, groups=set([1]))
     
