@@ -150,7 +150,9 @@ def test_waterbox():
         
         print ("lambda: ", context.getParameter('lambda_electrostatics'))
         print ("electrostatic dV/dl :", dvdle, deriv_electrostatic, "Diff: ", dvdle - deriv_electrostatic)
-        
+    
+    context.setParameter('lambda_electrostatics', 1.0)
+    
     print ("STERICS")
     for l in np.linspace(1.0, 0.0, 10):
         
