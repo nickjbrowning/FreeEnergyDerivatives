@@ -164,7 +164,7 @@ def test_solvated_ethanol():
     integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})
     
     context = Context(system, integrator, platform)
-    context.setPositions(positions)
+    context.setPositions(modeller.positions)
     
     context.setParameter('lambda_electrostatics', 0.8)
     context.setParameter('lambda_sterics', 0.8)
