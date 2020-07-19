@@ -41,14 +41,14 @@ def _get_electrostatics_expression(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
 
-    dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
-    dexceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
-    dexceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
-    dexceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
+    exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf);'
+    exceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
+    exceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
+    exceptions_electrostatics_energy_expression += 'reff_electrostatics=(softcore_beta*(1.0-lambda_electrostatics^softcore_b) + r^softcore_m)^(1/softcore_m);'
         
-    delectrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
+    electrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
 
-    return delectrostatics_mixing_rules, dexceptions_electrostatics_energy_expression
+    return electrostatics_mixing_rules, exceptions_electrostatics_energy_expression
 
 
 def _get_electrostatics_expression_derivative(reference_force):
