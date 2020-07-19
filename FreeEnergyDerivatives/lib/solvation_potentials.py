@@ -675,8 +675,9 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
             force.addParticle([charge])
             
     # Now restrict pairwise interactions to their respective groups
-    # na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
-    # na_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
+    print ("chemical atoms: ", chemical_atoms, "alchemical_atoms: ", alchemical_atoms)
+    dna_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
+    dna_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
 
     # now lets handle exclusions and exceptions
     
