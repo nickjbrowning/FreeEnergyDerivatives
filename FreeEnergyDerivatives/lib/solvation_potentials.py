@@ -607,17 +607,17 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
     
     dall_sterics_custom_nonbonded_forces = [dna_sterics_custom_nonbonded_force]
     
-    na_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, delectrostatics_energy_expression,
+    dna_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, delectrostatics_energy_expression,
                                                             True, 'lambda_electrostatics', False)
     dall_electrostatics_custom_nonbonded_forces = [dna_electrostatics_custom_nonbonded_force]
     
     # CustomBondForces represent exceptions not picked up by exclusions 
-    na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_sterics_energy_expression,
+    dna_sterics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_sterics_energy_expression,
                                                 True, 'lambda_sterics', False)
     
     dall_sterics_custom_bond_forces = [dna_sterics_custom_bond_force]
     
-    na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_electrostatics_energy_expression,
+    dna_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, dexceptions_electrostatics_energy_expression,
                                                        True, 'lambda_electrostatics', False)
    
     dall_electrostatics_custom_bond_forces = [dna_electrostatics_custom_bond_force]
