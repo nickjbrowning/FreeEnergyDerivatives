@@ -137,6 +137,8 @@ def test_waterbox():
         state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1]))
     
         energy_derivs = state.getEnergyParameterDerivatives()
+        print (energy_derivs.keys())
+        print (energy_derivs.values())
         dvdle = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
         
         deriv_state = context.getState(getEnergy=True, groups=set([2]))
@@ -152,9 +154,11 @@ def test_waterbox():
         
         context.setPositions(positions)
     
-        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0]))
+        state = context.getState(getEnergy=True, getParameterDerivatives=True, groups=set([0, 1]))
     
         energy_derivs = state.getEnergyParameterDerivatives()
+        print (energy_derivs.keys())
+        print (energy_derivs.values())
         dvdls = energy_derivs['lambda_sterics'] + energy_derivs['lambda_electrostatics']
         
         deriv_state = context.getState(getEnergy=True, groups=set([3]))
