@@ -51,7 +51,7 @@ def test_diatomic_system():
             # Create positions.
             positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
             
-            positions[1, 0] = 2.2 ** (1.0 / 6.0) * sigma
+            positions[1, 0] = 4.5 * unit.angstrom
             # positions[2, 0] = 2 * 2.2 ** (1.0 / 6.0) * sigma
             
             system.addParticle(mass)
@@ -89,8 +89,6 @@ def test_diatomic_system():
     
     context.setParameter('lambda_sterics', 1.0)
     context.setParameter('lambda_electrostatics', 1.0)
-    
-    positions[1, 1] = 4.5 * unit.angstroms
     
     print (positions)
     print (np.linalg.norm(positions, axis=1))
