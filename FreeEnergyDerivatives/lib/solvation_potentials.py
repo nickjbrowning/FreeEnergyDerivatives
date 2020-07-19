@@ -283,8 +283,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     # add all forces representing alchemical interactions
     for i, force in enumerate(all_custom_forces):
         add_global_parameters(force)
-        # force.setForceGroup(i + 1) 
-        force.setForceGroup(1) 
+        force.setForceGroup(i + 1) 
         new_system.addForce(force)
     
     if (compute_solvation_response):
@@ -296,7 +295,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         
         for i, force in enumerate(forces_to_add):
             add_global_parameters(force)
-            # force.setForceGroup(start_idx + i) 
+            force.setForceGroup(start_idx + i) 
             new_system.addForce(force)
             
     # remove the original non-bonded force
@@ -633,15 +632,13 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
         force.setUseLongRangeCorrection(False)  
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
-        # force.setForceGroup(group_id_start)
-        force.setForceGroup(2)
+        force.setForceGroup(group_id_start)
         
     for force in dall_electrostatics_custom_bond_forces:
         force.addPerBondParameter("chargeprod")  # charge product
         # force.addPerBondParameter("sigma") 
         
-        # force.setForceGroup(group_id_start + 1)
-        force.setForceGroup(2)
+        force.setForceGroup(group_id_start + 1)
         
     for force in dall_sterics_custom_nonbonded_forces:
         force.addPerParticleParameter("sigma")
@@ -649,7 +646,8 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
         force.setUseSwitchingFunction(reference_force.getUseSwitchingFunction())
         force.setCutoffDistance(reference_force.getCutoffDistance())
         force.setSwitchingDistance(reference_force.getSwitchingDistance())
-
+        
+        # force.setUseLongRangeCorrection(False)
         if disable_alchemical_dispersion_correction:
             force.setUseLongRangeCorrection(False)
         else:
@@ -657,15 +655,13 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
     
         force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
         
-        # force.setForceGroup(group_id_start + 2)
-        force.setForceGroup(3)
+        force.setForceGroup(group_id_start + 2)
         
     for force in dall_sterics_custom_bond_forces:
         force.addPerBondParameter("sigma")  
         force.addPerBondParameter("epsilon")
         
-        # force.setForceGroup(group_id_start + 3)
-        force.setForceGroup(3)
+        force.setForceGroup(group_id_start + 3)
     
     # add all particles to all custom forces...
     for particle_index in range(reference_force.getNumParticles()):
@@ -679,7 +675,7 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
             force.addParticle([charge])
             
     # Now restrict pairwise interactions to their respective groups
-    print ("chemical atoms: ", chemical_atoms, "alchemical_atoms: ", alchemical_atoms)
+    
     dna_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
     dna_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
 
