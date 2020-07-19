@@ -49,7 +49,7 @@ def test_diatomic_system():
             print (force.getUseSwitchingFunction())
             
             # Create positions.
-            positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
+            positions = unit.Quantity(np.zeros([2, 3], np.float32), unit.angstrom)
             
             positions[1, 0] = 2.2 ** (1.0 / 6.0) * sigma
             # positions[2, 0] = 2 * 2.2 ** (1.0 / 6.0) * sigma
