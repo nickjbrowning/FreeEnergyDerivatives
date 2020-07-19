@@ -61,7 +61,7 @@ def _get_electrostatics_expression_derivative(reference_force):
     c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
     c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
     
-    drdl = 'drdl = softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
+    drdl = 'drdl = -softcore_b*lambda_electrostatics^(softcore_b - 1.0)*softcore_beta*(1/softcore_m)*(softcore_beta*(1.0-lambda_electrostatics^softcore_b) +r^softcore_m)^((1/softcore_m) - 1.0);'
     
     dexceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(reff_electrostatics^(-1) + k_rf*reff_electrostatics^2 - c_rf)'
     dexceptions_electrostatics_energy_expression += '+ ONE_4PI_EPS0*lambda_electrostatics*chargeprod*(-1.0*reff_electrostatics^(-2.0)*drdl + 2*k_rf*reff_electrostatics*drdl);'
@@ -124,21 +124,21 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
                                                             True, 'lambda_electrostatics')
     
     aa_electrostatics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, electrostatics_energy_expression,
-                                                            annihilate_electrostatics, 'lambda_electrostatics')
+                                                            annihilate_electrostatics, 'lambda_electrostatics', request_derivative=annihilate_electrostatics)
     
     all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force, aa_electrostatics_custom_nonbonded_force]
     
     na_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
                                                        True, 'lambda_electrostatics')
     aa_electrostatics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_electrostatics_energy_expression,
-                                                       annihilate_electrostatics, 'lambda_electrostatics')
+                                                       annihilate_electrostatics, 'lambda_electrostatics', request_derivative=annihilate_electrostatics)
     
     all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force, aa_electrostatics_custom_bond_force]
     
     na_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
                                                     True, 'lambda_sterics')
     aa_sterics_custom_nonbonded_force = create_force(openmm.CustomNonbondedForce, sterics_energy_expression,
-                                                    annihilate_sterics, 'lambda_sterics')
+                                                    annihilate_sterics, 'lambda_sterics', request_derivative=annihilate_sterics)
     
     all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force, aa_sterics_custom_nonbonded_force]
     
@@ -146,7 +146,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     na_sterics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_sterics_energy_expression,
                                                 True, 'lambda_sterics')
     aa_sterics_custom_bond_force = create_force(openmm.CustomBondForce, exceptions_sterics_energy_expression,
-                                                annihilate_sterics, 'lambda_sterics')
+                                                annihilate_sterics, 'lambda_sterics', request_derivative=annihilate_sterics)
     
     all_sterics_custom_bond_forces = [na_sterics_custom_bond_force, aa_sterics_custom_bond_force]
 
@@ -166,7 +166,6 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         
     for force in all_electrostatics_custom_nonbonded_forces:
         force.addPerParticleParameter("charge")
-        # force.addPerParticleParameter("sigma") 
         force.setUseSwitchingFunction(False)
         force.setCutoffDistance(reference_force.getCutoffDistance())
         force.setUseLongRangeCorrection(False)  
