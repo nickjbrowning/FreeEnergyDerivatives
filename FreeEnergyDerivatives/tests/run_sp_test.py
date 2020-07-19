@@ -52,7 +52,7 @@ def test_diatomic_system():
             positions = unit.Quantity(np.zeros([3, 3], np.float32), unit.angstrom)
             
             positions[1, 0] = 2.2 ** (1.0 / 6.0) * sigma
-            positions[2, 0] = 2 * 2.2 ** (1.0 / 6.0) * sigma
+            # positions[2, 0] = 2 * 2.2 ** (1.0 / 6.0) * sigma
             
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
@@ -60,8 +60,8 @@ def test_diatomic_system():
             system.addParticle(mass)
             force.addParticle(charge, sigma, epsilon)
            
-            system.addParticle(mass)
-            force.addParticle(charge, sigma, epsilon)
+            # system.addParticle(mass)
+            # force.addParticle(charge, sigma, epsilon)
 
             system.addForce(force)
     
@@ -81,7 +81,7 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    new_system = sp.create_alchemical_system(system, [2], compute_solvation_response=True, softcore_beta=(2.0 * unit.angstroms) ** 6, softcore_m=6.0)
+    new_system = sp.create_alchemical_system(system, [2], compute_solvation_response=True)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
