@@ -96,7 +96,10 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     
     new_system = copy.deepcopy(system)
     
+    print ("SOLUTE_INDEXES:", solute_indicies)
+    
     alchemical_atoms = set(solute_indicies)
+    
     chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
     
     for force in new_system.getForces():
