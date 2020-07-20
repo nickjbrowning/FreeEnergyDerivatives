@@ -35,7 +35,7 @@ ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
 forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
 
 system_generator = SystemGenerator(
-    forcefields=['amber/protein.ff14SB.xml', 'amber/tip4pew_standard.xml', 'amber/tip4pew_HFE_multivalent.xml'],
+    forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
     small_molecule_forcefield='gaff-2.11',
     molecules=[ligand_mol],
     forcefield_kwargs=forcefield_kwargs)
@@ -45,10 +45,10 @@ ligand_pdb = PDBFile(args.pdb)
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
 if (args.solvate):
-    modeller.addSolvent(system_generator.forcefield, model='tip4pew', padding=14.0 * unit.angstroms)
+    modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
 system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
-        nonbondedCutoff=12.0 * unit.angstroms, constraints=HBonds, switch_distance=10.5 * unit.angstroms)
+        nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
     
 '''
 ---FINISHED SYSTEM PREPARATION---
