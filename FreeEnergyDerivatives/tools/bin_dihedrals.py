@@ -1,5 +1,10 @@
+'''
+Code to uniformly sample configurations from the distribution of a given dihedral over the course of an MD trajectory
+'''
+
 from netCDF4 import Dataset
 import argparse
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-netcdf', type=str, default=None)
@@ -13,9 +18,9 @@ def calc_dihedral(coordinates):
     p2 = coordinates[2]
     p3 = coordinates[3]
 
-    b0 = -1.0 * (b - a)
-    b1 = c - b
-    b2 = d - c
+    b0 = -1.0 * (p1 - p0)
+    b1 = p2 - p1
+    b2 = p3 - p2
 
     b1 /= np.linalg.norm(b1)
 
@@ -29,7 +34,7 @@ def calc_dihedral(coordinates):
 
 args = parser.parse_args()
 
-ncin = Dataset(args.netcdf, 'r', format='NETCDF5')
+ncin = Dataset(args.netcdf, 'r', format='NETCDF4')
 
 atom_indexes = np.array(args.indexes)
 
