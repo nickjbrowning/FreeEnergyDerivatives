@@ -37,12 +37,6 @@ def collect_solute_indexes(topology):
                 soluteIndices.append(atom.index)
     return soluteIndices
 
-
-if (args.solute_indexes == None):
-    solute_indexes = collect_solute_indexes(modeller.topology)
-else:
-    solute_indexes = np.array(args.solute_indexes)
-    
 '''
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
@@ -61,6 +55,11 @@ ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
+if (args.solute_indexes == None):
+    solute_indexes = collect_solute_indexes(modeller.topology)
+else:
+    solute_indexes = np.array(args.solute_indexes)
+    
 if (args.solvate):
     modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
