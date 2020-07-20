@@ -58,7 +58,6 @@ system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMe
 system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
 # Use a simple thermostat for T control
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-integrator.setIntegrationForceGroups(force_groups['integration'])
 integrator.setConstraintTolerance(1.0E-08)
 
 simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
