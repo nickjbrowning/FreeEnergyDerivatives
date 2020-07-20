@@ -90,7 +90,7 @@ for iteration in range(args.nsamples):
     state = simulation.context.getState(getPositions=True)
     positions = state.getPositions()
     
-    print (positions)
+    print (positions._value)
     
     print (positions[solute_indexes])
     
