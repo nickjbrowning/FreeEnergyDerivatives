@@ -69,13 +69,10 @@ simulation.minimizeEnergy()
 # lets equilibrate the system for 200 ps first
 simulation.step(100000)
 
-state = simulation.context.getState(getPositions=True)
-PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb", "w"))
-
 for iteration in range(args.nsamples):
     
     state = simulation.context.getState(getPositions=True)
-    PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("sample_" + str(iteration) + ".pdb", "w"))
+    PDBFile.writeFile(ligand_pdb.topology, state.getPositions(), file=open("sample_" + str(iteration) + ".pdb", "w"))
     
     simulation.step(args.nsample_steps)
 
