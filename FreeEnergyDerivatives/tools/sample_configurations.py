@@ -89,7 +89,7 @@ for iteration in range(args.nsamples):
     
     state = simulation.context.getState(getPositions=True)
     
-    positions = state.getPositions(asNumpy=True).value_in_unit_system(unit.md_unit_system)[solute_indexes, :]
+    positions = state.getPositions(asNumpy=True).value_in_unit_system(unit.angstroms)[solute_indexes, :]
     
     print (positions)
     
