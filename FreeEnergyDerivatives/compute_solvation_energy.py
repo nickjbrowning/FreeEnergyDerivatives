@@ -62,7 +62,7 @@ modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=14.0 * unit.angstroms)
 
 system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
-        nonbondedCutoff=12.0 * unit.angstroms, constraints=HBonds, switch_distance=10.0 * unit.angstroms)
+        nonbondedCutoff=12.0 * unit.angstroms, constraints=HBonds, switch_distance=10.5 * unit.angstroms)
     
 '''
 ---FINISHED SYSTEM PREPARATION---
@@ -79,6 +79,8 @@ if (args.solute_indexes == None):
 else:
     solute_indexes = np.array(args.solute_indexes)
 
+# modify original NonBondedForce, and add aditional CustomForces to model alchemical interactions. 
+# force_groups is a dictionary containing the sets used for integration and computing dV/dl contributions.
 alchemical_system, force_groups = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=args.compute_forces)
 
 print ("Force Groups:", force_groups)
@@ -118,8 +120,8 @@ PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb"
 '''
 ---THERMODYNAMIC INTEGRATION---
     sample dV/dL using two paths:
-        1) slowly dcouple electrostatics between solute and solvent
-        2) then slowly decouple steric interactions
+        1) decouple electrostatics between solute and solvent
+        2) then decouple steric interactions
         3) final dG estimate is then the dG of 1) + 2)
 '''
 
@@ -129,11 +131,13 @@ dV_electrostatics, dVe_forces = TI.collect_dvdl_values(simulation, electrostatic
                                                        solute_indexes, force_groups, 'lambda_electrostatics',
                                                        compute_forces_along_path=args.compute_forces)
 
+dV_electrostatics.tofile('dvdl_electrostatics.npy')
 dG_electrostatics = np.trapz(np.mean(dV_electrostatics, axis=1), x=electrostatics_grid[::-1])
 
 print ("dG electrostatics,", dG_electrostatics)
 
 if (args.compute_forces):
+    dVe_forces.tofile('dvdl_electrostatics_forces.npy')
     dG_electrostatics_forces = np.trapz(np.mean(dVe_forces, axis=1), x=electrostatics_grid[::-1], axis=0)
     print ("dG electrostatics forces", dG_electrostatics_forces)
 
@@ -143,10 +147,13 @@ dV_sterics, dVs_forces = TI.collect_dvdl_values(simulation, sterics_grid, args.n
                                              solute_indexes, force_groups, 'lambda_sterics',
                                              compute_forces_along_path=args.compute_forces)
 
+dV_sterics.tofile('dvdl_sterics.npy')
+
 dG_sterics = np.trapz(np.mean(dV_sterics, axis=1), x=sterics_grid[::-1])
 print ("dG sterics,", dG_sterics)
 
 if (args.compute_forces):
+    dVs_forces.tofile('dvdl_sterics_forces.npy')
     dG_sterics_forces = np.trapz(np.mean(dVs_forces, axis=1), x=sterics_grid[::-1], axis=0)
     print ("dG sterics forces", dG_sterics_forces)
 
