@@ -85,15 +85,20 @@ simulation.minimizeEnergy()
 # lets equilibrate the system for 200 ps first
 simulation.step(100000)
 
-for iteration in range(args.nsamples):
-    
-    state = simulation.context.getState(getPositions=True)
-    
-    positions = state.getPositions(asNumpy=True).value_in_unit(unit.angstroms)[solute_indexes, :]
-    
-    print (positions)
-    
-    PDBFile.writeFile(ligand_pdb.topology, positions, file=open("sample_" + str(iteration) + ".pdb", "w"))
-    
-    simulation.step(args.nsample_steps)
+simulation.reporters.append(StateDataReporter('data.txt', args.nsample_steps, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
+simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
+
+simulation.step(args.nsamples * args.nsample_steps)
+
+# for iteration in range(args.nsamples):
+#     
+#     state = simulation.context.getState(getPositions=True)
+#     
+#     positions = state.getPositions(asNumpy=True).value_in_unit(unit.angstroms)[solute_indexes, :]
+#     
+#     print (positions)
+#     
+#     PDBFile.writeFile(ligand_pdb.topology, positions, file=open("sample_" + str(iteration) + ".pdb", "w"))
+#     
+#     simulation.step(args.nsample_steps)
 
