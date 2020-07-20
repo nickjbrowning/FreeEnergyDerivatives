@@ -106,7 +106,7 @@ simulation.context.setParameter('lambda_electrostatics', 1.0)
 simulation.context.setParameter('lambda_sterics', 1.0)
 
 # fix any bad contacts etc
-# simulation.minimizeEnergy()
+simulation.minimizeEnergy()
 
 # lets equilibrate the system for 200 ps first
 simulation.step(100000)
