@@ -20,8 +20,7 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
         simulation.context.setParameter(lambda_var, l)
         
         simulation.step(50000)  # equilibrate for 100ps before sampling data
-        
-        t = []
+
         for iteration in range(nsamples):
             simulation.step(nsteps) 
             
@@ -32,6 +31,8 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
             energy_deriv = energy_derivs[lambda_var]
             
             if (not compute_forces_along_path): 
+                # be wary of using getEnergyParameterDerivatives() as of openMM 7.5, in my tests the electrostatic component
+                # can be split between lambda_electrostatics and lambda_sterics for some unknown reason (but the sum is correct)
                 dV[idx, iteration] = energy_deriv  
             elif (compute_forces_along_path): 
                 
@@ -44,9 +45,6 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
                 sample_forces[idx, iteration, :, :] = forces
         
         if (debug):
-            print ("%5.2f %5.2f %8.5f" % 
-                   (simulation.context.getParameter(lambda_var), np.average(dV[idx, :]), np.std(dV[idx, :]) / np.sqrt(nsamples))
-                   )
-            print ("Debug, analytical dv/dl derivative:", np.average(t))
+            print ("%5.2f %5.2f %8.5f" % (simulation.context.getParameter(lambda_var), np.average(dV[idx, :]), np.std(dV[idx, :]) / np.sqrt(nsamples)))
     
     return dV, sample_forces
