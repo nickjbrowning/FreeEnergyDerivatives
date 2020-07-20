@@ -35,7 +35,7 @@ def collect_solute_indexes(topology):
         if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
             for atom in res.atoms():
                 soluteIndices.append(atom.index)
-    return soluteIndices
+    return np.array(soluteIndices)
 
 '''
 ---SYSTEM PREPARATION---
