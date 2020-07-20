@@ -38,7 +38,7 @@ def collect_solute_indexes(topology):
     return soluteIndices
 
 
-platform = openmm.Platform.getPlatformByName('OpenCL')
+platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
 '''
