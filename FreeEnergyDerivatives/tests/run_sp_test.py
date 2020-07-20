@@ -80,7 +80,7 @@ def test_diatomic_system():
 
     system, positions, topology = test.system, test.positions, test.topology
     
-    new_system = sp.create_alchemical_system(system, [0], compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
+    new_system, force_groups = sp.create_alchemical_system(system, [0], compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     
@@ -89,7 +89,8 @@ def test_diatomic_system():
     context.setParameter('lambda_sterics', 1.0)
     context.setParameter('lambda_electrostatics', 1.0)
     
-    print (positions)
+    print (force_groups)
+    
     print (np.linalg.norm(positions, axis=1))
     context.setPositions(positions)
     
@@ -101,7 +102,9 @@ def test_waterbox():
     
     system, positions, topology = waterbox.system, waterbox.positions, waterbox.topology
     
-    system = sp.create_alchemical_system(system, [0, 1, 2], compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
+    system, force_groups = sp.create_alchemical_system(system, [0, 1, 2], compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
+    
+    print (force_groups)
     
     print (system.getNumForces())
     
@@ -155,11 +158,13 @@ def test_solvated_ethanol():
     
     solute_indexes = collect_solute_indexes(modeller.topology)
 
-    system = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
+    system, force_groups = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
     for force in system.getForces():
         print (force.__class__.__name__, force.getForceGroup())
         
+    print (force_groups)
+    
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})
     
