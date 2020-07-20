@@ -59,10 +59,10 @@ ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=10.0 * unit.angstroms)
+modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=14.0 * unit.angstroms)
 
 system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
-        nonbondedCutoff=9.0 * unit.angstroms, constraints=HBonds, switch_distance=7.5 * unit.angstroms)
+        nonbondedCutoff=12.0 * unit.angstroms, constraints=HBonds, switch_distance=10.0 * unit.angstroms)
     
 '''
 ---FINISHED SYSTEM PREPARATION---
@@ -111,9 +111,6 @@ simulation.minimizeEnergy()
 # lets equilibrate the system for 200 ps first
 simulation.step(100000)
 
-# simulation.reporters.append(StateDataReporter('data.txt', args.nsample_steps, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
-# simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
-
 # write out the current state for visual inspection
 state = simulation.context.getState(getPositions=True)
 PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb", "w"))
@@ -125,6 +122,7 @@ PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb"
         2) then slowly decouple steric interactions
         3) final dG estimate is then the dG of 1) + 2)
 '''
+
 electrostatics_grid = np.linspace(1.0, 0.0, args.nelectrostatic_points)
 
 dV_electrostatics, dVe_forces = TI.collect_dvdl_values(simulation, electrostatics_grid, args.nsamples, args.nsample_steps,
@@ -140,8 +138,6 @@ if (args.compute_forces):
     print ("dG electrostatics forces", dG_electrostatics_forces)
 
 sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points)
-
-print (simulation.context.getParameter('lambda_electrostatics'), simulation.context.getParameter('lambda_sterics'))
 
 dV_sterics, dVs_forces = TI.collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps,
                                              solute_indexes, force_groups, 'lambda_sterics',
@@ -159,15 +155,3 @@ print ("dG", dG_electrostatics + dG_sterics)
 if (args.compute_forces):
     print ("dG forces", dG_electrostatics_forces + dG_sterics_forces)
 
-# import matplotlib.pyplot as plt
-# from matplotlib import rc
-# rc('text', usetex=True)
-#  
-# plt.plot(electrostatics_grid, dVe, label='electrostatics')
-# plt.plot(sterics_grid, dVs, label='sterics')
-# plt.legend()
-#  
-# plt.xlabel(r'$\lambda$')
-# plt.ylabel(r'$\left <\frac{\partial U}{\partial \lambda}\right >$')
-#  
-# plt.savefig('dvdl.png')

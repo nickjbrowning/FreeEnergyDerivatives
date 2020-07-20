@@ -32,7 +32,7 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
             
             if (not compute_forces_along_path): 
                 # be wary of using getEnergyParameterDerivatives() as of openMM 7.5, in my tests the electrostatic component
-                # can be split between lambda_electrostatics and lambda_sterics for some unknown reason (but the sum is correct)
+                # can be incorrectly split between lambda_electrostatics and lambda_sterics for some unknown reason (but the sum is correct)
                 dV[idx, iteration] = energy_deriv  
             elif (compute_forces_along_path): 
                 
