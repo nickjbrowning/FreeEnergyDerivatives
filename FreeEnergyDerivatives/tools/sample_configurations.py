@@ -77,5 +77,5 @@ for iteration in range(args.nsamples):
     state = simulation.context.getState(getPositions=True)
     PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("sample_" + str(iteration) + ".pdb", "w"))
     
-    simulation.step(nsample_steps)
+    simulation.step(args.nsample_steps)
 
