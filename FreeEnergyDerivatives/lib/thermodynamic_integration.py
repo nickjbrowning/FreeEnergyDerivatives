@@ -2,13 +2,14 @@ import numpy as np
 from simtk import unit
 
 
-def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexes, lambda_var=None, debug=True, compute_forces_along_path=False):
+def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexes, force_groups, lambda_var, debug=True, compute_forces_along_path=False):
     
     dV = np.zeros((len(lambda_grid), nsamples))
     sample_forces = np.zeros((len(lambda_grid), nsamples, len(solute_indexes), 3))
-    
+
     if (debug):
-        print ("lambda variable: ", lambda_var)
+        print ("lambda variable: %s" % lambda_var)
+        print ('force_groups[%s] = %s' % (lambda_var, force_groups[lambda_var]))
         print ("lambda", "mean(dV/dl)", "SEM(dV/dl)")
     
     for i, l in enumerate(lambda_grid):
@@ -30,21 +31,15 @@ def collect_dvdl_values(simulation, lambda_grid, nsamples, nsteps, solute_indexe
             
             energy_deriv = energy_derivs[lambda_var]
             
-            dV[idx, iteration] = energy_deriv  
-            
-            if (compute_forces_along_path): 
-                lambda_group = 999
-                if (lambda_var == 'lambda_electrostatics'):
-                    lambda_group = 1
-                elif (lambda_var == 'lambda_sterics'):
-                    lambda_group = 2
+            if (not compute_forces_along_path): 
+                dV[idx, iteration] = energy_deriv  
+            elif (compute_forces_along_path): 
                 
-                state_deriv = simulation.context.getState(getEnergy=True, getForces=True, groups=set([lambda_group]))
+                state_deriv = simulation.context.getState(getEnergy=True, getForces=True, groups=force_groups[lambda_var])
                 
                 dvdl = state_deriv.getPotentialEnergy()
-                
-                t.append(dvdl._value)
-                
+                dV[idx, iteration] = dvdl.value_in_unit_system(unit.md_unit_system)
+
                 forces = state_deriv.getForces(asNumpy=True).value_in_unit_system(unit.md_unit_system)[solute_indexes, :]
                 sample_forces[idx, iteration, :, :] = forces
         

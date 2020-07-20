@@ -79,8 +79,9 @@ if (args.solute_indexes == None):
 else:
     solute_indexes = np.array(args.solute_indexes)
 
-alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=args.compute_forces)
+alchemical_system, force_groups = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=args.compute_forces)
 
+print ("Force Groups:", force_groups)
 # freeze solute
 if (args.freeze_atoms):
     for idx in solute_indexes:
@@ -94,7 +95,7 @@ if (args.freeze_atoms):
 alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
 # Use a simple thermostat for T control
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-integrator.setIntegrationForceGroups(set([0]))
+integrator.setIntegrationForceGroups(force_groups['integration'])
 integrator.setConstraintTolerance(1.0E-08)
 
 simulation = app.Simulation(modeller.topology, alchemical_system, integrator, platform)
@@ -127,7 +128,8 @@ PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb"
 electrostatics_grid = np.linspace(1.0, 0.0, args.nelectrostatic_points)
 
 dV_electrostatics, dVe_forces = TI.collect_dvdl_values(simulation, electrostatics_grid, args.nsamples, args.nsample_steps,
-                                                       solute_indexes, lambda_var='lambda_electrostatics', compute_forces_along_path=args.compute_forces)
+                                                       solute_indexes, force_groups, 'lambda_electrostatics',
+                                                       compute_forces_along_path=args.compute_forces)
 
 dG_electrostatics = np.trapz(np.mean(dV_electrostatics, axis=1), x=electrostatics_grid[::-1])
 
@@ -142,7 +144,8 @@ sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points)
 print (simulation.context.getParameter('lambda_electrostatics'), simulation.context.getParameter('lambda_sterics'))
 
 dV_sterics, dVs_forces = TI.collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps,
-                                             solute_indexes, lambda_var='lambda_sterics', compute_forces_along_path=args.compute_forces)
+                                             solute_indexes, force_groups, 'lambda_sterics',
+                                             compute_forces_along_path=args.compute_forces)
 
 dG_sterics = np.trapz(np.mean(dV_sterics, axis=1), x=sterics_grid[::-1])
 print ("dG sterics,", dG_sterics)

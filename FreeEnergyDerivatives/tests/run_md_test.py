@@ -78,7 +78,7 @@ system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMe
 
 solute_indexes = collect_solute_indexes(modeller.topology)
 
-alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
+alchemical_system, force_groups = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
 
 '''
 ---FINISHED SYSTEM PREPARATION---
@@ -86,7 +86,7 @@ alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore
     
 alchemical_system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-integrator.setIntegrationForceGroups(set([0]))
+integrator.setIntegrationForceGroups(force_groups['integration'])
 
 # positions = minimize(alchemical_system, modeller.positions, integrator)
 
