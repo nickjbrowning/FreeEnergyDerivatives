@@ -88,7 +88,10 @@ simulation.step(100000)
 for iteration in range(args.nsamples):
     
     state = simulation.context.getState(getPositions=True)
-    PDBFile.writeFile(ligand_pdb.topology, state.getPositions()[solute_indexes], file=open("sample_" + str(iteration) + ".pdb", "w"))
+    positions = state.getPositions()
+    print (positions[solute_indexes, :])
+    
+    PDBFile.writeFile(ligand_pdb.topology, positions[solute_indexes, :], file=open("sample_" + str(iteration) + ".pdb", "w"))
     
     simulation.step(args.nsample_steps)
 
