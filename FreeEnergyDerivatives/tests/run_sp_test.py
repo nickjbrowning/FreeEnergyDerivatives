@@ -89,7 +89,7 @@ def test_diatomic_system():
     context.setParameter('lambda_sterics', 1.0)
     context.setParameter('lambda_electrostatics', 1.0)
     
-    print (force_groups)
+    print ("FORCE GROUPS: ", force_groups)
     
     print (np.linalg.norm(positions, axis=1))
     context.setPositions(positions)
@@ -104,7 +104,7 @@ def test_waterbox():
     
     system, force_groups = sp.create_alchemical_system(system, [0, 1, 2], compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     
-    print (force_groups)
+    print ("FORCE GROUPS: ", force_groups)
     
     print (system.getNumForces())
     
@@ -163,7 +163,7 @@ def test_solvated_ethanol():
     for force in system.getForces():
         print (force.__class__.__name__, force.getForceGroup())
         
-    print (force_groups)
+    print ("FORCE GROUPS: ", force_groups)
     
     integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
     integrator.setIntegrationForceGroups({0, 1, 2, 3, 4, 5, 6, 7, 8})

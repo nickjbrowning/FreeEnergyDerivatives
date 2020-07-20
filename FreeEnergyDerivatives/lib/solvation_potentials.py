@@ -290,15 +290,15 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     groups = {'integration' : set(integration_group)}
     
     if (compute_solvation_response):
-        # Add dV/dl energy components, will give us d2V/dldR as well
-        forces_to_add, deriv_groups = _get_alchemical_response(new_system, reference_force, solute_indicies,
-                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b)
         
         start_idx = new_system.getNumForces() + 1
         
+        # Add dV/dl energy components, will give us d2V/dldR as well
+        forces_to_add, deriv_groups = _get_alchemical_response(new_system, reference_force, solute_indicies,
+                                      disable_alchemical_dispersion_correction, softcore_alpha, softcore_beta, softcore_m, softcore_n, softcore_a, softcore_b, start_idx)
+        
         for i, force in enumerate(forces_to_add):
             add_global_parameters(force)
-            force.setForceGroup(start_idx + i) 
             new_system.addForce(force)
         
         groups.update(deriv_groups)
