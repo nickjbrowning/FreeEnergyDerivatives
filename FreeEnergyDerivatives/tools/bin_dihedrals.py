@@ -1,4 +1,4 @@
-import netCDF4
+from netCDF4 import Dataset
 import argparse
 
 parser = argparse.ArgumentParser()
