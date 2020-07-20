@@ -24,7 +24,7 @@ parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
-parser.add_argument('-nsample_steps', type=int, default=100)  # 0.5ps using 2fs timestep
+parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
 args = parser.parse_args()
 
     
@@ -50,7 +50,7 @@ ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
 forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
 
 system_generator = SystemGenerator(
-    forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
+    forcefields=['amber/protein.ff14SB.xml', 'amber/tip4pew_standard.xml', 'amber/tip4pew_HFE_multivalent.xml'],
     small_molecule_forcefield='gaff-2.11',
     molecules=[ligand_mol],
     forcefield_kwargs=forcefield_kwargs)
@@ -59,7 +59,7 @@ ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=14.0 * unit.angstroms)
+modeller.addSolvent(system_generator.forcefield, model='tip4pew', padding=14.0 * unit.angstroms)
 
 system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
         nonbondedCutoff=12.0 * unit.angstroms, constraints=HBonds, switch_distance=10.5 * unit.angstroms)
@@ -125,7 +125,9 @@ PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb"
         3) final dG estimate is then the dG of 1) + 2)
 '''
 
-electrostatics_grid = np.linspace(1.0, 0.0, args.nelectrostatic_points)
+electrostatics_grid = np.linspace(1.0, 0.0, args.nelectrostatic_points, dtype=np.float64)
+
+electrostatics_grid.tofile('electrostatics_grid.npy')
 
 dV_electrostatics, dVe_forces = TI.collect_dvdl_values(simulation, electrostatics_grid, args.nsamples, args.nsample_steps,
                                                        solute_indexes, force_groups, 'lambda_electrostatics',
@@ -141,7 +143,9 @@ if (args.compute_forces):
     dG_electrostatics_forces = np.trapz(np.mean(dVe_forces, axis=1), x=electrostatics_grid[::-1], axis=0)
     print ("dG electrostatics forces", dG_electrostatics_forces)
 
-sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points)
+sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points, dtype=np.float64)
+
+sterics_grid.tofile('sterics_grid.npy')
 
 dV_sterics, dVs_forces = TI.collect_dvdl_values(simulation, sterics_grid, args.nsamples, args.nsample_steps,
                                              solute_indexes, force_groups, 'lambda_sterics',
