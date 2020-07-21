@@ -72,6 +72,6 @@ if args.nsamples != None:
      
     for i in range(args.nsamples):
          
-        indexes = np.where(bin_idexes == i + 1)
+        indexes = np.where(bin_indexes == i + 1)
         
         print (indexes)
