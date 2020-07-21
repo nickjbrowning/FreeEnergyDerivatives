@@ -310,7 +310,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
     nonbonded_force.setForceGroup(0)
     new_system.addForce(nonbonded_force)
     
-    ''' Return a dictionary containing force group sets as well as the new system
+    ''' Return a dictionary containing force group sets as well as the new system with modified alchemical interactions
     
         integration : set corresponding to the forces that need to be used for system integration, **including** hybrid-hamiltonian components
         lambda_electrostatics: set corresponding to electrostatic dV/dl contributions (**not** for integration)
