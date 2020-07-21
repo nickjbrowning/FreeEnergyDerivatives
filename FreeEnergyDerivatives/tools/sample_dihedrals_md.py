@@ -54,7 +54,8 @@ sort_indexes = np.argsort(dihedrals)
 sorted_coordinates = coordinates[sort_indexes, :, :]
 sorted_dihedrals = dihedrals[sort_indexes]
     
-import matplotlib.pyplot as plt
-plt.hist(dihedrals, bins=50)
-plt.show()
-    
+hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
+
+bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
+
+print (bin_indexes)
