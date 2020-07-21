@@ -5,11 +5,13 @@ Code to uniformly sample configurations from the distribution of a given dihedra
 from netCDF4 import Dataset
 import argparse
 import numpy as np
+from lib import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-netcdf', type=str, default=None)
 parser.add_argument('-indexes', type=int, nargs='+', default=None)
 parser.add_argument('-nsamples', type=int, default=None)
+parser.add_argument('-xyz', type=str, default=None)
 
 
 def calc_dihedral(coordinates):
@@ -80,7 +82,15 @@ if args.nsamples != None:
         
         for j in range(len(chosen_indexes)):
             
+            print ("selecting index %i from bin %i" % (chosen_indexes[j], i))
+            
+            coordinates = sorted_coordinates[chosen_indexes[j]]
+            
+            if (args.xyz != None):  # interpretting this as wanting to output samples to disk
+                elements, _ = utils.read_xyz(args.xyz)
+                utils.write_xyz('sample_' + str(sample_counter) + '.xyz', elements, coordinates)
+                
             sample_counter += 1
             
-    print ("Picked %i configuration samples" % sample_counter)
+    print ("picked %i configuration samples" % sample_counter)
 
