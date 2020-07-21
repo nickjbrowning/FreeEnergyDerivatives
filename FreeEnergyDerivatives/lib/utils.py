@@ -15,9 +15,7 @@ def read_xyz(file_path):
         
         idx = 2 + i
         
-        data = lines[idx].rstrip().split(" ")
-        
-        print (data)
+        data = lines[idx].rstrip().split()
         
         element = data[0]
         
