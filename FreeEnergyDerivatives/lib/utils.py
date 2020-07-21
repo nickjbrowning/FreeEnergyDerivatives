@@ -37,8 +37,8 @@ def write_xyz(file_path, elements, coordinates, comment=''):
     fobj.write(str(len(coordinates)) + '\n')
     fobj.write(comment + '\n')
     
-    print (elements)
-    print (coordinates)
+    print (len(elements))
+    print (len(coordinates))
     
     for i in range(len(coordinates)):
         fobj.write(elements[i] + " " + " ".join([str(pos) for pos in coordinates[i]]) + '\n')
