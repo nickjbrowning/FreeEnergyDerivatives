@@ -76,7 +76,9 @@ if args.nsamples != None:
             
             print ("selecting index %i from bin %i" % (chosen_indexes[j], i))
             
-            coordinates = sorted_coordinates[chosen_indexes[j]]
+            coordinates = sorted_coordinates[chosen_indexes[j], :, :]
+            
+            print (len(coordinates))
             
             if (args.xyz != None):  # interpretting this as wanting to output samples to disk
                 elements, _ = utils.read_xyz(args.xyz)
