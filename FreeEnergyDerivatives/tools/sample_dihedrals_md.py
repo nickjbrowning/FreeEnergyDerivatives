@@ -48,6 +48,11 @@ for i in range(coordinates.shape[0]):
     dihedral = calc_dihedral(dihedral_coords)
     
     dihedrals[i] = dihedral
+
+sort_indexes = np.argsort(dihedrals)
+
+sorted_coordinates = coordinates[sort_indexes, :, :]
+sorted_dihedrals = dihedrals[sort_indexes]
     
 import matplotlib.pyplot as plt
 plt.hist(dihedrals, bins=50)
