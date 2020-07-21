@@ -9,7 +9,8 @@ from lib import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-netcdf', type=str, default=None)
-parser.add_argument('-indexes', type=int, nargs='+', default=None)
+parser.add_argument('-dihedral_indexes', type=int, nargs='+', default=None)
+parser.add_argument('-solute_indexes', type=int, nargs='+')
 parser.add_argument('-nsamples', type=int, default=None)
 parser.add_argument('-xyz', type=str, default=None)
 
@@ -39,9 +40,10 @@ args = parser.parse_args()
 
 ncin = Dataset(args.netcdf, 'r', format='NETCDF4')
 
-atom_indexes = np.array(args.indexes)
+atom_indexes = np.array(args.dihedral_indexes)
+solute_indexes = np.array(args.solute_indexes)
 
-coordinates = ncin.variables['coordinates'][:]
+coordinates = ncin.variables['coordinates'][solute_indexes, :, :]
 
 dihedrals = np.array([calc_dihedral(coordinates[i][atom_indexes, :]) for i in range(coordinates.shape[0])])
 
@@ -77,8 +79,6 @@ if args.nsamples != None:
             print ("selecting index %i from bin %i" % (chosen_indexes[j], i))
             
             coordinates = sorted_coordinates[chosen_indexes[j], :, :]
-            
-            print (len(sorted_coordinates[chosen_indexes[j], :, :]))
             
             if (args.xyz != None):  # interpretting this as wanting to output samples to disk
                 elements, _ = utils.read_xyz(args.xyz)

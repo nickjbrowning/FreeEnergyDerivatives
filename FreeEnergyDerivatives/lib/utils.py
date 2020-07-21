@@ -41,4 +41,14 @@ def write_xyz(file_path, elements, coordinates, comment=''):
         fobj.write(elements[i] + " " + " ".join([str(pos) for pos in coordinates[i]]) + '\n')
         
     fobj.close()
+
+    
+def collect_solute_indexes(topology):
+    soluteIndices = []
+    for res in topology.residues():
+        resname = res.name.upper()
+        if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
+            for atom in res.atoms():
+                soluteIndices.append(atom.index)
+    return soluteIndices
         
