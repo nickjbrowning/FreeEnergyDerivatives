@@ -78,7 +78,7 @@ if args.nsamples != None:
             
             coordinates = sorted_coordinates[chosen_indexes[j], :, :]
             
-            print (len(coordinates))
+            print (len(sorted_coordinates[chosen_indexes[j], :, :]))
             
             if (args.xyz != None):  # interpretting this as wanting to output samples to disk
                 elements, _ = utils.read_xyz(args.xyz)
