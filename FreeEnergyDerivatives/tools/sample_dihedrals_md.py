@@ -56,6 +56,8 @@ sorted_dihedrals = dihedrals[sort_indexes]
     
 hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
 
+print (len(bin_edges))
+
 bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
 
 print (bin_indexes)
