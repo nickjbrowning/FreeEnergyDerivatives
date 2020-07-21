@@ -70,8 +70,8 @@ if args.nsamples != None:
  
     samples_per_bin = np.int(args.nsamples / 50)
      
-    for i in range(args.nsamples):
+    for i in range(50):
          
         indexes = np.where(bin_indexes == i + 1)
         
-        print (indexes)
+        print (indexes[0])
