@@ -68,10 +68,19 @@ if args.nsamples != None:
         print ("args.nsamples must be > nbins")
         exit()
  
+    sample_counter = 0
+    
     samples_per_bin = np.int(args.nsamples / 50)
      
     for i in range(50):
          
-        indexes = np.where(bin_indexes == i + 1)
+        indexes = np.where(bin_indexes == i + 1)[0]
         
-        print (indexes[0])
+        chosen_indexes = np.random.choice(indexes, size=samples_per_bin)
+        
+        for j in range(len(chosen_indexes)):
+            
+            sample_counter += 1
+            
+    print ("Picked %i configuration samples" % sample_counter)
+
