@@ -42,7 +42,7 @@ coordinates = ncin.variables['coordinates'][:]
 
 dihedrals = np.zeros(coordinates.shape[0])
 
-for i in coordinates.shape[0]:
+for i in range(coordinates.shape[0]):
     dihedral_coords = coordinates[i][atom_indexes, :]
     
     dihedral = calc_dihedral(dihedral_coords)
