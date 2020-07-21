@@ -17,6 +17,8 @@ def read_xyz(file_path):
         
         data = lines[idx].rstrip().split(" ")
         
+        print (data)
+        
         element = data[0]
         
         position = np.array([np.float(data[i]) for i in [1, 2, 3]])

@@ -56,14 +56,6 @@ hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
 # get the bin index for each dihedral
 bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
 
-# import matplotlib.pyplot as plt
-
-# plt.hist(sorted_dihedrals, bins=50)
-
-# plt.show()
-
-print (bin_indexes)
- 
 if args.nsamples != None:
      
     if (args.nsamples < 51):
