@@ -45,6 +45,8 @@ solute_indexes = np.array(args.solute_indexes)
 
 coordinates = ncin.variables['coordinates'][solute_indexes, :, :]
 
+print (coordinates.shape)
+
 dihedrals = np.array([calc_dihedral(coordinates[i][atom_indexes, :]) for i in range(coordinates.shape[0])])
 
 sort_indexes = np.argsort(dihedrals)
