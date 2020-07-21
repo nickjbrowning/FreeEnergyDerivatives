@@ -43,7 +43,7 @@ ncin = Dataset(args.netcdf, 'r', format='NETCDF4')
 atom_indexes = np.array(args.dihedral_indexes)
 solute_indexes = np.array(args.solute_indexes)
 
-coordinates = ncin.variables['coordinates'][solute_indexes, :, :]
+coordinates = ncin.variables['coordinates'][:, solute_indexes, :]
 
 print (coordinates.shape)
 
