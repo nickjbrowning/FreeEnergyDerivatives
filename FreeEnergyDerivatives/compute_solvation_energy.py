@@ -16,6 +16,7 @@ from lib import thermodynamic_integration as TI
 import argparse
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument('-sdf', type=str)
 parser.add_argument('-pdb', type=str)
 parser.add_argument('-freeze_atoms', type=bool, default=False)
@@ -38,7 +39,7 @@ def collect_solute_indexes(topology):
     return soluteIndices
 
 
-platform = openmm.Platform.getPlatformByName('OpenCL')
+platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
 '''
@@ -161,8 +162,9 @@ if (args.compute_forces):
     dG_sterics_forces = np.trapz(np.mean(dVs_forces, axis=1), x=sterics_grid[::-1], axis=0)
     print ("dG sterics forces", dG_sterics_forces)
 
-print ("dG", dG_electrostatics + dG_sterics)
+print ("Final dG", dG_electrostatics + dG_sterics)
 
 if (args.compute_forces):
     print ("dG forces", dG_electrostatics_forces + dG_sterics_forces)
+    (dG_electrostatics_forces + dG_sterics_forces).tofile('dvdl_forces.npy')
 

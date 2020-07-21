@@ -9,6 +9,7 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('-netcdf', type=str, default=None)
 parser.add_argument('-indexes', type=int, nargs='+', default=None)
+parser.add_argument('-nsamples', type=int, default=None)
 
 
 def calc_dihedral(coordinates):
@@ -40,24 +41,29 @@ atom_indexes = np.array(args.indexes)
 
 coordinates = ncin.variables['coordinates'][:]
 
-dihedrals = np.zeros(coordinates.shape[0])
-
-for i in range(coordinates.shape[0]):
-    dihedral_coords = coordinates[i][atom_indexes, :]
-    
-    dihedral = calc_dihedral(dihedral_coords)
-    
-    dihedrals[i] = dihedral
+dihedrals = np.array([calc_dihedral(coordinates[i][atom_indexes, :]) for i in range(coordinates.shape[0])])
 
 sort_indexes = np.argsort(dihedrals)
 
 sorted_coordinates = coordinates[sort_indexes, :, :]
 sorted_dihedrals = dihedrals[sort_indexes]
     
+# bin_edges has length nbins + 1
 hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
 
-print (len(bin_edges))
-
+# get the bin index for each dihedral
 bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
 
 print (bin_indexes)
+
+if args.nsamples != None:
+    
+    if (args.nsamples < 51):
+        print ("args.nsamples must be > nbins")
+        exit()
+
+    samples_per_bin = np.nint(50 / args.nsamples)
+    
+    for i in range(args.nsamples):
+        
+        pass
