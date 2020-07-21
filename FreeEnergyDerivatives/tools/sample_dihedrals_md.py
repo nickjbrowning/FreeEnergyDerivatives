@@ -68,7 +68,7 @@ if args.nsamples != None:
         print ("args.nsamples must be > nbins")
         exit()
  
-    samples_per_bin = np.nint(args.nsamples / 50)
+    samples_per_bin = np.int(args.nsamples / 50)
      
     for i in range(args.nsamples):
          
