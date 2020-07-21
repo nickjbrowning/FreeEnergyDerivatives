@@ -141,7 +141,7 @@ print ("dG electrostatics,", dG_electrostatics)
 
 if (args.compute_forces):
     dVe_forces.tofile('dvdl_electrostatics_forces.npy')
-    dG_electrostatics_forces = np.trapz(np.mean(dVe_forces, axis=1), x=electrostatics_grid[::-1], axis=0)
+    dG_electrostatics_forces = -np.trapz(np.mean(dVe_forces, axis=1), x=electrostatics_grid[::-1], axis=0)
     print ("dG electrostatics forces", dG_electrostatics_forces)
 
 sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points, dtype=np.float64)
@@ -159,8 +159,8 @@ print ("dG sterics,", dG_sterics)
 
 if (args.compute_forces):
     dVs_forces.tofile('dvdl_sterics_forces.npy')
-    dG_sterics_forces = np.trapz(np.mean(dVs_forces, axis=1), x=sterics_grid[::-1], axis=0)
-    print ("dG sterics forces", dG_sterics_forces)
+    dG_sterics_forces = -np.trapz(np.mean(dVs_forces, axis=1), x=sterics_grid[::-1], axis=0)
+    print ("dG sterics derivative", dG_sterics_forces)
 
 print ("Final dG", dG_electrostatics + dG_sterics)
 
