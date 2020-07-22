@@ -4,6 +4,7 @@ from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Modeller, PDBFile
 from mdtraj.reporters import NetCDFReporter  
+from netCDF4 import Dataset
 
 from openmmtools import alchemy
 import numpy as np
@@ -90,15 +91,15 @@ simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
 
 simulation.step(args.nsamples * args.nsample_steps)
 
-# for iteration in range(args.nsamples):
+# if (args.solvate):
+#     # need to strip off the solvent molecules 
+#     ncin = Dataset('output.nc', 'r', format='NETCDF4')
 #     
-#     state = simulation.context.getState(getPositions=True)
+#     ncout = Dataset('samples.nc', 'w', format='NETCDF4')
+#     ncout.createDimension('atom', len(solute_indexes))
 #     
-#     positions = state.getPositions(asNumpy=True).value_in_unit(unit.angstroms)[solute_indexes, :]
+#     ncout.createDimension('frame', ncin.dimensions['frame'].size)
+#     ncout.createDimension('spatial', ncin.dimensions['spatial'].size)
 #     
-#     print (positions)
-#     
-#     PDBFile.writeFile(ligand_pdb.topology, positions, file=open("sample_" + str(iteration) + ".pdb", "w"))
-#     
-#     simulation.step(args.nsample_steps)
+#     coordinates = ncout.createVariable('coordinates', dtype('double').char, ('coordinate',))
 

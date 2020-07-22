@@ -6,7 +6,6 @@ from openmmtools.constants import ONE_4PI_EPS0
 from openmmtools import forces
 import numpy as np
 import copy
-from lxml.ElementInclude import include
 
 
 def _get_sterics_expression():
