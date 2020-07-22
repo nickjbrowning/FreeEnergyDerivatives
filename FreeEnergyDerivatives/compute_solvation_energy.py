@@ -111,8 +111,8 @@ simulation.context.setParameter('lambda_sterics', 1.0)
 # fix any bad contacts etc
 simulation.minimizeEnergy()
 
-# lets equilibrate the system for 200 ps first
-simulation.step(100000)
+# lets equilibrate the system for 0.5 ns first
+simulation.step(250000)
 
 # write out the current state for visual inspection
 state = simulation.context.getState(getPositions=True)
