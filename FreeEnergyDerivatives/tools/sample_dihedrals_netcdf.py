@@ -42,7 +42,7 @@ args = parser.parse_args()
 if len(args.dihedral_indexes) % 4 != 0:
     exit()
 
-ncin = Dataset(args.netcdf, 'r', format='NETCDF4')
+ncin = Dataset(args.netcdf, 'r')
 
 atom_indexes = np.array(args.dihedral_indexes)
 
