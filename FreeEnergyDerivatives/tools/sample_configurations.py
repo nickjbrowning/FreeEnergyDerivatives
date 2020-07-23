@@ -4,7 +4,7 @@ from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Modeller, PDBFile
 from mdtraj.reporters import NetCDFReporter  
-from netCDF4 import Dataset
+from netCDF4 as nc
 
 from openmmtools import alchemy
 import numpy as np
@@ -15,6 +15,7 @@ from openmmforcefields.generators import SystemGenerator
 from lib import solvation_potentials as sp
 from lib import thermodynamic_integration as TI
 import argparse
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdf', type=str)
@@ -92,14 +93,4 @@ simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
 simulation.step(args.nsamples * args.nsample_steps)
 
 # if (args.solvate):
-#     # need to strip off the solvent molecules 
-#     ncin = Dataset('output.nc', 'r', format='NETCDF4')
-#     
-#     ncout = Dataset('samples.nc', 'w', format='NETCDF4')
-#     ncout.createDimension('atom', len(solute_indexes))
-#     
-#     ncout.createDimension('frame', ncin.dimensions['frame'].size)
-#     ncout.createDimension('spatial', ncin.dimensions['spatial'].size)
-#     
-#     coordinates = ncout.createVariable('coordinates', dtype('double').char, ('coordinate',))
 
