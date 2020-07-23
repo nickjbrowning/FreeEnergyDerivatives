@@ -63,9 +63,9 @@ def strip_netcdf(incdf, outcdf, atom_indexes):
         # copy dimensions except for atom
         for name, dimension in src.dimensions.items():
             if (name == "atom"):
-                dst.createDimension(name, (len(atom_indexes) if not dimension.isUnlimited() else None))
+                dst.createDimension(name, (len(atom_indexes) if not dimension.isunlimited() else None))
             else:
-                dst.createDimension(name, (len(dimension) if not dimension.isUnlimited() else None))
+                dst.createDimension(name, (len(dimension) if not dimension.isunlimited() else None))
                 
         # copy all file data except for coordinates
         for name, variable in src.variables.items():
@@ -89,7 +89,7 @@ def display_netcdf(incdf):
         # copy dimensions
         print ("--DIMENSIONS--")
         for name, dimension in src.dimensions.items():
-            print (name, dimension, dimension.isUnlimited())
+            print (name, dimension, dimension.isunlimited())
             
         print ("--VARIABLES--")
         for name, variable in src.variables.items():
