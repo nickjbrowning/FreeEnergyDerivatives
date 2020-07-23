@@ -88,7 +88,7 @@ def display_netcdf(incdf):
             print (name, dimension)
             
         print ("--VARIABLES--")
-        
         for name, variable in src.variables.items():
             print (name, variable)
+            print ("--")
  
