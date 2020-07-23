@@ -51,7 +51,8 @@ if (args.solute_indexes == None):
     solute_indexes = utils.collect_solute_indexes(modeller.topology)
 else:
     solute_indexes = np.array(args.solute_indexes)
-    
+
+print ("Solute Indexes:", solute_indexes)
 if (args.solvate):
     modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
