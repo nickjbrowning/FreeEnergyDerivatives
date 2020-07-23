@@ -126,12 +126,13 @@ dV_electrostatics, dVe_derivatives = TI.collect_dvdl_values(simulation, electros
 dV_electrostatics.tofile('dvdl_electrostatics.npy')
 dG_electrostatics = np.trapz(np.mean(dV_electrostatics, axis=1), x=electrostatics_grid[::-1])
 
-print ("dG electrostatics,", dG_electrostatics)
+print ("dG electrostatics:", dG_electrostatics)
 
 if (args.compute_forces):
     dVe_derivatives.tofile('dvdl_electrostatics_derivatives.npy')
     dG_electrostatics_forces = -np.trapz(np.mean(dVe_derivatives, axis=1), x=electrostatics_grid[::-1], axis=0)
-    print ("dG electrostatics forces", dG_electrostatics_forces)
+    print ("--dG electrostatic forces--")
+    print (dG_electrostatics_forces)
 
 sterics_grid = np.linspace(1.0, 0.0, args.nsteric_points, dtype=np.float64)
 
@@ -144,16 +145,19 @@ dV_sterics, dVs_derivatives = TI.collect_dvdl_values(simulation, sterics_grid, a
 dV_sterics.tofile('dvdl_sterics.npy')
 
 dG_sterics = np.trapz(np.mean(dV_sterics, axis=1), x=sterics_grid[::-1])
-print ("dG sterics,", dG_sterics)
+print ("dG sterics:", dG_sterics)
 
 if (args.compute_forces):
     dVs_derivatives.tofile('dvdl_sterics_derivatives.npy')
     dG_sterics_forces = -np.trapz(np.mean(dVs_derivatives, axis=1), x=sterics_grid[::-1], axis=0)
-    print ("dG sterics derivative", dG_sterics_forces)
+    print ("--dG steric forces--")
+    print (dG_sterics_forces)
 
-print ("Final dG", dG_electrostatics + dG_sterics)
+print ("Final dG:", dG_electrostatics + dG_sterics)
 
 if (args.compute_forces):
-    print ("dG forces", dG_electrostatics_forces + dG_sterics_forces)
+    print ("--dG Forces--")
+    print (dG_electrostatics_forces + dG_sterics_forces)
+    
     (dG_electrostatics_forces + dG_sterics_forces).tofile('dG_forces.npy')
 
