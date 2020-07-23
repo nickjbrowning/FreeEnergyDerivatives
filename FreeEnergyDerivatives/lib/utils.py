@@ -74,7 +74,11 @@ def strip_netcdf(incdf, outcdf, atom_indexes):
                 dst.variables[name][:] = src.variables[name][:, atom_indexes, : ]
             else:
                 dst.variables[name][:] = src.variables[name][:]
-
+            
+            # copy varaible attributes
+            for attrname in variable.ncattrs():
+                dst.variables[name].setncattr(attrname, variable.getncattr(attrname))
+            
         
 def display_netcdf(incdf):
     with nc.Dataset(incdf) as src:
