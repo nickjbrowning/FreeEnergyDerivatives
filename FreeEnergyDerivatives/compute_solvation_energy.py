@@ -28,17 +28,6 @@ parser.add_argument('-nsamples', type=int, default=2500)  # 1ns
 parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
 args = parser.parse_args()
 
-    
-def collect_solute_indexes(topology):
-    soluteIndices = []
-    for res in topology.residues():
-        resname = res.name.upper()
-        if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
-            for atom in res.atoms():
-                soluteIndices.append(atom.index)
-    return soluteIndices
-
-
 platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
@@ -76,7 +65,7 @@ system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMe
 # determines solute indexes
 
 if (args.solute_indexes == None):
-    solute_indexes = collect_solute_indexes(modeller.topology)
+    solute_indexes = utils.collect_solute_indexes(modeller.topology)
 else:
     solute_indexes = np.array(args.solute_indexes)
 
@@ -166,5 +155,5 @@ print ("Final dG", dG_electrostatics + dG_sterics)
 
 if (args.compute_forces):
     print ("dG forces", dG_electrostatics_forces + dG_sterics_forces)
-    (dG_electrostatics_forces + dG_sterics_forces).tofile('dvdl_forces.npy')
+    (dG_electrostatics_forces + dG_sterics_forces).tofile('dG_forces.npy')
 

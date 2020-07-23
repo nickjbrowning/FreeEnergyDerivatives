@@ -37,16 +37,6 @@ def moving_average(a, n) :
     return ret[n - 1:] / n
 
 
-def collect_solute_indexes(topology):
-    soluteIndices = []
-    for res in topology.residues():
-        resname = res.name.upper()
-        if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
-            for atom in res.atoms():
-                soluteIndices.append(atom.index)
-    return soluteIndices
-
-
 platform = openmm.Platform.getPlatformByName('OpenCL')
 platform.setPropertyDefaultValue('Precision', 'Mixed')
 
@@ -84,7 +74,7 @@ system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMe
 # determines solute indexes
 
 if (args.solute_indexes == None):
-    solute_indexes = collect_solute_indexes(modeller.topology)
+    solute_indexes = utils.collect_solute_indexes(modeller.topology)
     
 alchemical_system = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0)
 

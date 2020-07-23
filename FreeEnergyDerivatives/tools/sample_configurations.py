@@ -29,16 +29,6 @@ args = parser.parse_args()
 platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
-
-def collect_solute_indexes(topology):
-    soluteIndices = []
-    for res in topology.residues():
-        resname = res.name.upper()
-        if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
-            for atom in res.atoms():
-                soluteIndices.append(atom.index)
-    return np.array(soluteIndices)
-
 '''
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
@@ -58,7 +48,7 @@ ligand_pdb = PDBFile(args.pdb)
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
 if (args.solute_indexes == None):
-    solute_indexes = collect_solute_indexes(modeller.topology)
+    solute_indexes = utils.collect_solute_indexes(modeller.topology)
 else:
     solute_indexes = np.array(args.solute_indexes)
     
