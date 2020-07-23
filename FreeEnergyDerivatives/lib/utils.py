@@ -72,7 +72,7 @@ def strip_netcdf(incdf, outcdf, atom_indexes):
 
         
 def display_netcdf(incdf):
-    with nc.Dataset("orig.nc") as src:
+    with nc.Dataset(incdf) as src:
         # copy attributes
         print ("--ATTRIBUTES--")
         for name in src.ncattrs():
