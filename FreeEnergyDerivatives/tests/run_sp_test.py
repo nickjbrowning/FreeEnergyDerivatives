@@ -19,6 +19,8 @@ from openmmtools import forces
 from openmmtools.alchemy import  *
 
 from lib import solvation_potentials as sp
+from lib import utils
+
 from openmmtools.testsystems import TestSystem, WaterBox
 
 platform = openmm.Platform.getPlatformByName('CUDA')
@@ -124,15 +126,6 @@ def test_waterbox():
 
     
 def test_solvated_ethanol():
-    
-    def collect_solute_indexes(topology):
-        soluteIndices = []
-        for res in topology.residues():
-            resname = res.name.upper()
-            if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
-                for atom in res.atoms():
-                    soluteIndices.append(atom.index)
-        return soluteIndices
 
     platform = openmm.Platform.getPlatformByName('CUDA')
     platform.setPropertyDefaultValue('Precision', 'mixed')
@@ -156,7 +149,7 @@ def test_solvated_ethanol():
     system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
             nonbondedCutoff=9.0 * unit.angstroms, constraints=HBonds, switchDistance=7.5 * unit.angstroms)
     
-    solute_indexes = collect_solute_indexes(modeller.topology)
+    solute_indexes = utils.collect_solute_indexes(modeller.topology)
 
     system, force_groups = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=True, disable_alchemical_dispersion_correction=False)
     

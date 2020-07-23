@@ -20,6 +20,7 @@ from openmmtools.alchemy import  *
 
 from lib import solvation_potentials as sp
 from pathlib import Path
+from lib import utils
 
 
 def minimize(system, initial_pos, integrator):
@@ -30,16 +31,6 @@ def minimize(system, initial_pos, integrator):
     minimizer = LocalEnergyMinimizer.minimize(context)
     
     return context.getState(getPositions=True).getPositions()
-    
-
-def collect_solute_indexes(topology):
-    soluteIndices = []
-    for res in topology.residues():
-        resname = res.name.upper()
-        if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
-            for atom in res.atoms():
-                soluteIndices.append(atom.index)
-    return soluteIndices
 
 
 platform = openmm.Platform.getPlatformByName('CUDA')
@@ -76,7 +67,7 @@ modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * u
 system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
         nonbondedCutoff=9.0 * unit.angstroms, constraints=HBonds, switchDistance=7.5 * unit.angstroms)
 
-solute_indexes = collect_solute_indexes(modeller.topology)
+solute_indexes = utils.collect_solute_indexes(modeller.topology)
 
 alchemical_system, force_groups = sp.create_alchemical_system(system, solute_indexes, softcore_beta=0.0, softcore_m=1.0, compute_solvation_response=True)
 
