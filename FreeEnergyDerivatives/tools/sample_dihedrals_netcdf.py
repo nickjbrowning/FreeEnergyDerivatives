@@ -10,7 +10,7 @@ from lib import utils
 parser = argparse.ArgumentParser()
 parser.add_argument('-netcdf', type=str, default=None)
 parser.add_argument('-dihedral_indexes', type=int, nargs='+', default=None)
-parser.add_argument('-solute_indexes', type=int, nargs='+')
+parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-nsamples', type=int, default=None)
 parser.add_argument('-xyz', type=str, default=None)
 parser.add_argument('-plot', type=bool, default=False)
@@ -37,10 +37,10 @@ def calc_dihedral(coordinates):
     return np.degrees(np.arctan2(y, x))
 
 
+args = parser.parse_args()
+
 if len(args.dihedral_indexes) % 4 != 0:
     exit()
-
-args = parser.parse_args()
 
 ncin = Dataset(args.netcdf, 'r', format='NETCDF4')
 
@@ -49,11 +49,12 @@ atom_indexes = np.array(args.dihedral_indexes)
 atom_indexes = atom_indexes.reshape((len(atom_indexes) / 4, 4))  # reshape to allow for n-dimensional histograms
 
 print ("Atom indexes:", atom_indexes)
-    
-solute_indexes = np.array(args.solute_indexes)
 
-# NCIN should only contain solute configurations
 coordinates = ncin.variables['coordinates'][:]
+
+if (args.solute_indexes != None):
+    solute_indexes = np.array(args.solute_indexes)
+    coordinates = coordinates[:, solute_indexes, :]
 
 dihedrals = np.zeros((coordinates.shape[0], atom_indexes.shape[0]))  # NCoords, NDihedrals
 
