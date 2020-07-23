@@ -62,7 +62,10 @@ for i in range(atom_indexes.shape[0]):
     dihedrals[:, i] = np.array([calc_dihedral(coordinates[j][atom_indexes[i], :]) for j in range(coordinates.shape[0])])
 
 bins = np.linspace(-180, 180, 60)
-tiled_bins = np.tile(bins, atom_indexes.shape[0])
+tiled_bins = np.tile(bins, (atom_indexes.shape[0], 1))
+
+print (tiled_bins.shape)
+print (dihedrals.shape)
 
 H, edges = np.histogramdd(dihedrals, bins=tiled_bins, normed=True)
 
