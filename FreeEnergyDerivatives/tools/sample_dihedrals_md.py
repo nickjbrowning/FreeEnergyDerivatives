@@ -1,5 +1,5 @@
 '''
-Code to uniformly sample configurations from the distribution of a given dihedral over the course of an MD trajectory
+Code to uniformly sample configurations from the distributions of a set of dihedrals over the course of an MD trajectory
 '''
 
 from netCDF4 import Dataset
@@ -13,6 +13,7 @@ parser.add_argument('-dihedral_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-solute_indexes', type=int, nargs='+')
 parser.add_argument('-nsamples', type=int, default=None)
 parser.add_argument('-xyz', type=str, default=None)
+parser.add_argument('-plot', type=bool, default=False)
 
 
 def calc_dihedral(coordinates):
@@ -36,31 +37,54 @@ def calc_dihedral(coordinates):
     return np.degrees(np.arctan2(y, x))
 
 
+if len(args.dihedral_indexes) % 4 != 0:
+    exit()
+
 args = parser.parse_args()
 
 ncin = Dataset(args.netcdf, 'r', format='NETCDF4')
 
 atom_indexes = np.array(args.dihedral_indexes)
+
+atom_indexes = atom_indexes.reshape((len(atom_indexes) / 4, 4))  # reshape to allow for n-dimensional histograms
+
+print ("Atom indexes:", atom_indexes)
+    
 solute_indexes = np.array(args.solute_indexes)
 
-coordinates = ncin.variables['coordinates'][:, solute_indexes, :]
+# NCIN should only contain solute configurations
+coordinates = ncin.variables['coordinates'][:]
 
-print (coordinates.shape)
+dihedrals = np.zeros((coordinates.shape[0], atom_indexes.shape[0]))  # NCoords, NDihedrals
 
-dihedrals = np.array([calc_dihedral(coordinates[i][atom_indexes, :]) for i in range(coordinates.shape[0])])
+for i in range(atom_indexes.shape[0]):
+    dihedrals[:, i] = np.array([calc_dihedral(coordinates[j][atom_indexes[i], :]) for j in range(coordinates.shape[0])])
 
-sort_indexes = np.argsort(dihedrals)
+bins = np.linspace(-180, 180, 60)
 
-sorted_coordinates = coordinates[sort_indexes, :, :]
-sorted_dihedrals = dihedrals[sort_indexes]
+H, edges = np.histogramdd(dihedrals, bins=bins, normed=True)
+
+bin_indexes = np.digitize(dihedrals, bins)
+
+if (args.plot):
+    from matplotlib import pyplot as plt
     
-# bin_edges has length nbins + 1
-hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
-
-# get the bin index for each dihedral
-bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
+    plt.imshow(H, interpolation=None)
+    
+    plt.show()
 
 if args.nsamples != None:
+    
+    sort_indexes = np.argsort(dihedrals)
+    
+    sorted_coordinates = coordinates[sort_indexes, :, :]
+    sorted_dihedrals = dihedrals[sort_indexes]
+        
+    # bin_edges has length nbins + 1
+    hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
+    
+    # get the bin index for each dihedral
+    bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
      
     if (args.nsamples < 51):
         print ("args.nsamples must be > nbins")
