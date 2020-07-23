@@ -55,20 +55,25 @@ def collect_solute_indexes(topology):
 
 
 def strip_netcdf(incdf, outcdf, atom_indexes):
-    with nc.Dataset("orig.nc") as src, nc.Dataset("filtered.nc", "w") as dst:
+    with nc.Dataset(incdf, "r") as src, nc.Dataset(outcdf, "w") as dst:
         # copy attributes
         for name in src.ncattrs():
             dst.setncattr(name, src.getncattr(name))
-        # copy dimensions
-        for name, dimension in src.dimensions.iteritems():
-            dst.createDimension(
-                name, (len(dimension) if not dimension.isunlimited else None))
-        # copy all file data except for the excluded
-        for name, variable in src.variables.iteritems():
-            if (name == "coordinates"):
-                pass
+            
+        # copy dimensions except for atom
+        for name, dimension in src.dimensions.items():
+            if (name == "atom"):
+                dst.createDimension(name, (len(atom_indexes) if not dimension.isunlimited else None))
             else:
-                x = dst.createVariable(name, variable.datatype, variable.dimension)
+                dst.createDimension(name, (len(dimension) if not dimension.isunlimited else None))
+                
+        # copy all file data except for coordinates
+        for name, variable in src.variables.items():
+            x = dst.createVariable(name, variable.datatype, variable.dimension)
+            if name == "coordinates":
+                dst.variables[name][:] = src.variables[name][:, atom_indexes, : ]
+            else:
+                dst.variables[name][:] = src.variables[name][:]
 
         
 def display_netcdf(incdf):
