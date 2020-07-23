@@ -54,7 +54,8 @@ def collect_solute_indexes(topology):
     return soluteIndices
 
 
-def strip_netcdf(incdf, outcdf, atom_indexes, centre=True):
+def slice_netcdf(incdf, outcdf, atom_indexes, centre=True):
+    '''NETCDF3_64BIT_OFFSET is the amber standard, had trouble getting the default format to work with vmd...'''
     with nc.Dataset(incdf, "r") as src, nc.Dataset(outcdf, "w", format='NETCDF3_64BIT_OFFSET') as dst:
         # copy attributes
         for name in src.ncattrs():

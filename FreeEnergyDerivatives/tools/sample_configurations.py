@@ -93,4 +93,5 @@ simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
 simulation.step(args.nsamples * args.nsample_steps)
 
 if (args.solvate):
-    utils.strip_netcdf("output.nc", "samples.nc", solute_indexes)
+    # lets strip out the solvent moecules in a new netcdf file
+    utils.slice_netcdf("output.nc", "samples.nc", solute_indexes)
