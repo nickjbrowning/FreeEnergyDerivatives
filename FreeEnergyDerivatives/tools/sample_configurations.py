@@ -74,8 +74,8 @@ simulation.context.setPositions(modeller.positions)
 # fix any bad contacts etc
 simulation.minimizeEnergy()
 
-# lets equilibrate the system for 200 ps first
-simulation.step(100000)
+# lets equilibrate the system for 1ns first
+simulation.step(500000)
 
 simulation.reporters.append(StateDataReporter('data.txt', args.nsample_steps, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
 simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
