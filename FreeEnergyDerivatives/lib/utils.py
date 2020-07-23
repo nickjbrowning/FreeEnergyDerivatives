@@ -90,9 +90,9 @@ def display_netcdf(incdf):
         print ("--VARIABLES--")
         for name, variable in src.variables.items():
             print (name, variable)
-            print ">> Variable attributes"
+            print (">> Variable attributes")
             for name2 in variable.ncattrs():
-                print (name2, variable.getncattr(name2))
+                print (">>", name2, variable.getncattr(name2))
                 
             print ("--")
  
