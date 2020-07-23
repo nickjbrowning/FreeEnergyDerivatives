@@ -85,10 +85,10 @@ def display_netcdf(incdf):
         # copy dimensions
         print ("--DIMENSIONS--")
         for name, dimension in src.dimensions.items():
-            print (name, (len(dimension) if not dimension.isunlimited else None))
+            print (name, dimension)
             
         print ("--VARIABLES--")
         
         for name, variable in src.variables.items():
-            print (name, variable.datatype, variable.dimensions)
+            print (name, variable)
  
