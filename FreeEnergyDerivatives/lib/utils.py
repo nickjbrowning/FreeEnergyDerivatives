@@ -55,7 +55,7 @@ def collect_solute_indexes(topology):
 
 
 def strip_netcdf(incdf, outcdf, atom_indexes):
-    with nc.Dataset(incdf, "r") as src, nc.Dataset(outcdf, "w") as dst:
+    with nc.Dataset(incdf, "r") as src, nc.Dataset(outcdf, "w", format="NETCDF4") as dst:
         # copy attributes
         for name in src.ncattrs():
             dst.setncattr(name, src.getncattr(name))
