@@ -79,11 +79,11 @@ def display_netcdf(incdf):
             print (name, src.getncattr(name))
         # copy dimensions
         print ("--DIMENSIONS--")
-        for name, dimension in src.dimensions.iteritems():
+        for name, dimension in src.dimensions.items():
             print (name, (len(dimension) if not dimension.isunlimited else None))
             
         print ("--VARIABLES--")
         
-        for name, variable in src.variables.iteritems():
+        for name, variable in src.variables.items():
             print (name, variable.datatype, variable.dimension)
  
