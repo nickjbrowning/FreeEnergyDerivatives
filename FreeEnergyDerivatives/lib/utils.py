@@ -44,11 +44,12 @@ def write_xyz(file_path, elements, coordinates, comment=''):
     fobj.close()
 
     
-def collect_solute_indexes(topology):
+def collect_solute_indexes(topology, solvent=['WAT', 'HOH'], pos_ions=['NA', 'K', 'Li'], neg_ions=['F', 'CL', 'BR', 'I']):
     soluteIndices = []
+    
     for res in topology.residues():
         resname = res.name.upper()
-        if (resname != 'HOH' and resname != 'WAT'and resname != 'CL'and resname != 'NA'):
+        if (resname not in solvent and resname not in neg_ions and resname not in pos_ions):
             for atom in res.atoms():
                 soluteIndices.append(atom.index)
     return soluteIndices
