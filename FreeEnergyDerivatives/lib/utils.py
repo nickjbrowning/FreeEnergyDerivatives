@@ -69,7 +69,7 @@ def strip_netcdf(incdf, outcdf, atom_indexes):
                 
         # copy all file data except for coordinates
         for name, variable in src.variables.items():
-            x = dst.createVariable(name, variable.datatype, variable.dimension)
+            x = dst.createVariable(name, variable.datatype, variable.dimensions)
             if name == "coordinates":
                 dst.variables[name][:] = src.variables[name][:, atom_indexes, : ]
             else:
