@@ -46,7 +46,7 @@ ncin = Dataset(args.netcdf, 'r')
 
 atom_indexes = np.array(args.dihedral_indexes)
 
-atom_indexes = atom_indexes.reshape((np.ceil(len(atom_indexes) / 4), 4))  # reshape to allow for n-dimensional histograms
+atom_indexes = atom_indexes.reshape((np.int(np.ceil(len(atom_indexes) / 4)), 4))  # reshape to allow for n-dimensional histograms
 
 print ("Atom indexes:", atom_indexes)
 
