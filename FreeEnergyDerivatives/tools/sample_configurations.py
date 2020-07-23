@@ -4,7 +4,7 @@ from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Modeller, PDBFile
 from mdtraj.reporters import NetCDFReporter  
-from netCDF4 as nc
+import netCDF4 as nc
 
 from openmmtools import alchemy
 import numpy as np
@@ -14,8 +14,8 @@ from openmmforcefields.generators import SystemGenerator
 
 from lib import solvation_potentials as sp
 from lib import thermodynamic_integration as TI
+from lib import utils
 import argparse
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdf', type=str)
@@ -92,5 +92,5 @@ simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
 
 simulation.step(args.nsamples * args.nsample_steps)
 
-# if (args.solvate):
-
+if (args.solvate):
+    utils.strip_netcdf("output.nc", "samples.nc", solute_indexes)

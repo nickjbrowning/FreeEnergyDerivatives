@@ -54,7 +54,7 @@ def collect_solute_indexes(topology):
     return soluteIndices
 
 
-def strip_netcdf(incdf, outcdf, atom_indexes):
+def strip_netcdf(incdf, outcdf, atom_indexes, centre=True):
     with nc.Dataset(incdf, "r") as src, nc.Dataset(outcdf, "w", format='NETCDF3_64BIT_OFFSET') as dst:
         # copy attributes
         for name in src.ncattrs():
@@ -62,7 +62,6 @@ def strip_netcdf(incdf, outcdf, atom_indexes):
             
         # copy dimensions except for atom
         for name, dimension in src.dimensions.items():
-            print ((len(dimension) if not dimension.isunlimited() else None))
             if (name == "atom"):
                 dst.createDimension(name, size=(len(atom_indexes) if not dimension.isunlimited() else None))
             else:
@@ -72,7 +71,11 @@ def strip_netcdf(incdf, outcdf, atom_indexes):
         for name, variable in src.variables.items():
             x = dst.createVariable(name, variable.datatype, variable.dimensions)
             if name == "coordinates":
-                dst.variables[name][:] = src.variables[name][:, atom_indexes, : ]
+                min = np.min(src.variables[name][:, atom_indexes, : ], axis=0)
+                if (centre):
+                    dst.variables[name][:] = src.variables[name][:, atom_indexes, : ] - min
+                else:
+                    dst.variables[name][:] = src.variables[name][:, atom_indexes, : ]
             else:
                 dst.variables[name][:] = src.variables[name][:]
             
