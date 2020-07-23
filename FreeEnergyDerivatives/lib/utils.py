@@ -71,7 +71,7 @@ def strip_netcdf(incdf, outcdf, atom_indexes, centre=True):
         for name, variable in src.variables.items():
             x = dst.createVariable(name, variable.datatype, variable.dimensions)
             if name == "coordinates":
-                min = np.min(src.variables[name][:, atom_indexes, : ], axis=0)
+                min = np.min(src.variables[name][:, atom_indexes, : ], axis=1)
                 if (centre):
                     dst.variables[name][:] = src.variables[name][:, atom_indexes, : ] - min
                 else:
