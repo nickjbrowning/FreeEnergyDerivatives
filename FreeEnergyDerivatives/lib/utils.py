@@ -137,10 +137,7 @@ def merge_netcdf(innetcdfs, outnetcdf):
             
         # copy dimensions except for atom
         for name, dimension in src.dimensions.items():
-            if (name == "atom"):
-                dst.createDimension(name, size=(len(atom_indexes) if not dimension.isunlimited() else None))
-            else:
-                dst.createDimension(name, size=(len(dimension) if not dimension.isunlimited() else None))
+            dst.createDimension(name, size=(len(dimension) if not dimension.isunlimited() else None))
                 
         for name, variable in src.variables.items():
             x = dst.createVariable(name, variable.datatype, variable.dimensions)
