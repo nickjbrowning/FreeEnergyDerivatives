@@ -56,6 +56,7 @@ else:
 forcefield = ForceField('amber14sb.xml', 'tip3p.xml')
 
 print ("Solute Indexes:", solute_indexes)
+
 if (args.solvate):
     modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
     
