@@ -53,7 +53,7 @@ if (args.solute_indexes == None):
 else:
     solute_indexes = np.array(args.solute_indexes)
 
-forcefield = ForceField('amber14sb.xml', 'tip3p.xml')
+forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
 
 print ("Solute Indexes:", solute_indexes)
 
