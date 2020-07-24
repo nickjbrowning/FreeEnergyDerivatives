@@ -147,7 +147,7 @@ def merge_netcdf(innetcdfs, outnetcdf):
                 dst.variables[name].setncattr(attrname, variable.getncattr(attrname))
                 
     for netcdf in innetcdfs:
-        with nc.Dataset(innetcdfs[0], "r") as src:
+        with nc.Dataset(netcdf, "r") as src:
             # copy all file data except for coordinates
             for name, variable in src.variables.items():
                 if ("frame" in variable.dimensions):
