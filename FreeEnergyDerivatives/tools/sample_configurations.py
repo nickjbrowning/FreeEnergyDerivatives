@@ -61,7 +61,7 @@ if (args.solvate):
     modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
     
 system = forcefield.createSystem(modeller.topology, nonbondedMethod=PME,
-        nonbondedCutoff=1 * nanometer, constraints=HBonds)
+        nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds)
 
 # system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
 #         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
