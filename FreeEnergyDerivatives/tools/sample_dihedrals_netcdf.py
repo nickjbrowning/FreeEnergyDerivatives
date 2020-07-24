@@ -34,7 +34,7 @@ def calc_dihedral(coordinates):
 
     x = np.dot(v, w)
     y = np.dot(np.cross(b1, v), w)
-    return np.degrees(np.arctan2(y, x))
+    return np.arctan2(y, x)
 
 
 args = parser.parse_args()
@@ -61,20 +61,24 @@ dihedrals = np.zeros((coordinates.shape[0], atom_indexes.shape[0]))  # NCoords, 
 for i in range(atom_indexes.shape[0]):
     dihedrals[:, i] = np.array([calc_dihedral(coordinates[j][atom_indexes[i], :]) for j in range(coordinates.shape[0])])
 
-bins = np.linspace(-180, 180, 60)
+print (dihedrals)
+
+bins = np.linspace(-np.pi, np.pi, 90)
 tiled_bins = np.tile(bins, (atom_indexes.shape[0], 1))
 
-print (tiled_bins.shape)
+print (tiled_bins)
 print (dihedrals.shape)
 
 H, edges = np.histogramdd(dihedrals, bins=tiled_bins, normed=True)
 
+print (H.shape)
 bin_indexes = np.digitize(dihedrals, bins)
 
 if (args.plot):
     from matplotlib import pyplot as plt
     
-    plt.imshow(H, interpolation=None)
+    plt.hist(dihedrals[:, 1], bins=90)
+    # plt.gca().invert_yaxis()
     
     plt.show()
 

@@ -1,8 +1,11 @@
 import numpy as np
 import netCDF4 as nc
 
+# TODO could maybe turn xyz writing/reading to dictionary writing/reading
+
 
 def read_xyz(file_path):
+    
     fobj = open(file_path, 'r')
     lines = fobj.readlines()
     fobj.close()
@@ -11,6 +14,9 @@ def read_xyz(file_path):
     
     elements = []
     coordinates = []
+    forces = []
+    
+    comment = lines[1]
     
     for i in range(natoms):
         
@@ -22,16 +28,24 @@ def read_xyz(file_path):
         
         position = np.array([np.float(data[i]) for i in [1, 2, 3]])
         
+        if (len(data) > 4):  # assume we have force info as well
+            force = np.array([np.float(data[i]) for i in [4, 5, 6]])
+            forces.append(force)
+            
         elements.append(element)
         coordinates.append(position)
         
     elements = np.array(elements)
     coordinates = np.array(coordinates)
     
-    return elements, coordinates
+    if (len(forces) > 0):
+        forces = np.array(forces)
+        return elements, coordinates, forces, comment
+    else:
+        return elements, coordinates, comment
 
 
-def write_xyz(file_path, elements, coordinates, comment=''):
+def write_xyz(file_path, elements, coordinates, forces=None, comment=''):
     
     fobj = open(file_path, 'w')
     
@@ -39,7 +53,12 @@ def write_xyz(file_path, elements, coordinates, comment=''):
     fobj.write(comment + '\n')
     
     for i in range(len(coordinates)):
-        fobj.write(elements[i] + " " + " ".join([str(pos) for pos in coordinates[i]]) + '\n')
+        fobj.write(elements[i] + " " + " ".join([str(pos) for pos in coordinates[i]]))
+        
+        if (forces is not None):
+            fobj.write(" " + " ".join([str(pos) for pos in forces[i]]))
+            
+        fobj.write("\n")
         
     fobj.close()
 
