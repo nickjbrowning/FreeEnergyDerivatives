@@ -127,7 +127,7 @@ def display_netcdf(incdf):
 
             
 def merge_netcdf(input_netcdfs, outnetcdf):
-    
+    # TODO doesnt work atm
     dst = nc.Dataset(outnetcdf, "w", format='NETCDF3_64BIT_OFFSET')
     
     with nc.Dataset(input_netcdfs[0], "r") as src:
@@ -141,7 +141,7 @@ def merge_netcdf(input_netcdfs, outnetcdf):
                 
         for name, variable in src.variables.items():
             x = dst.createVariable(name, variable.datatype, variable.dimensions)
-            
+    
             # copy varaible attributes
             for attrname in variable.ncattrs():
                 dst.variables[name].setncattr(attrname, variable.getncattr(attrname))

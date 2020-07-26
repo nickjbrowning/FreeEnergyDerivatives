@@ -8,13 +8,35 @@ import numpy as np
 from lib import utils
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-netcdf', type=str, default=None)
+parser.add_argument('-netcdf', type=str, default=None, nargs='+')
 parser.add_argument('-dihedral_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-nsamples', type=int, default=None)
 parser.add_argument('-xyz', type=str, default=None)
 parser.add_argument('-plot', type=bool, default=False)
 
+args = parser.parse_args()
+
+if len(args.dihedral_indexes) % 4 != 0:
+    exit()
+
+
+def parse_netcdf(infile, atom_indexes):
+    ncin = Dataset(infile, 'r')
+    
+    coordinates = ncin.variables['coordinates'][:]
+    
+    if (args.solute_indexes != None):
+        solute_indexes = np.array(args.solute_indexes)
+        coordinates = coordinates[:, solute_indexes, :]
+    
+    dihedrals = np.zeros((coordinates.shape[0], atom_indexes.shape[0]))  # NCoords, NDihedrals
+    
+    for i in range(atom_indexes.shape[0]):
+        dihedrals[:, i] = np.array([calc_dihedral(coordinates[j][atom_indexes[i], :]) for j in range(coordinates.shape[0])])
+        
+    return dihedrals
+    
 
 def calc_dihedral(coordinates):
    
@@ -37,31 +59,18 @@ def calc_dihedral(coordinates):
     return np.arctan2(y, x)
 
 
-args = parser.parse_args()
-
-if len(args.dihedral_indexes) % 4 != 0:
-    exit()
-
-ncin = Dataset(args.netcdf, 'r')
-
 atom_indexes = np.array(args.dihedral_indexes)
-
 atom_indexes = atom_indexes.reshape((np.int(np.ceil(len(atom_indexes) / 4)), 4))  # reshape to allow for n-dimensional histograms
 
 print ("Atom indexes:", atom_indexes)
 
-coordinates = ncin.variables['coordinates'][:]
-
-if (args.solute_indexes != None):
-    solute_indexes = np.array(args.solute_indexes)
-    coordinates = coordinates[:, solute_indexes, :]
-
-dihedrals = np.zeros((coordinates.shape[0], atom_indexes.shape[0]))  # NCoords, NDihedrals
-
-for i in range(atom_indexes.shape[0]):
-    dihedrals[:, i] = np.array([calc_dihedral(coordinates[j][atom_indexes[i], :]) for j in range(coordinates.shape[0])])
-
-print (dihedrals)
+all_dihedrals = []
+for file in args.netcdf:
+    print ("Reading File: ", file)
+    dihedrals = parse_netcdf(file, atom_indexes)
+    all_dihedrals.append(dihedrals)
+    
+dihedrals = np.concatenate(all_dihedrals)
 
 bins = np.linspace(-np.pi, np.pi, 90)
 tiled_bins = np.tile(bins, (atom_indexes.shape[0], 1))
@@ -77,8 +86,7 @@ bin_indexes = np.digitize(dihedrals, bins)
 if (args.plot):
     from matplotlib import pyplot as plt
     
-    plt.hist(dihedrals[:, 1], bins=90)
-    # plt.gca().invert_yaxis()
+    plt.contour(H, levels=50)
     
     plt.show()
 
@@ -90,7 +98,7 @@ if args.nsamples != None:
     sorted_dihedrals = dihedrals[sort_indexes]
         
     # bin_edges has length nbins + 1
-    hist, bin_edges = np.histogram(sorted_dihedrals, bins=50)
+    hist, bin_edges = np.histogram(sorted_dihedrals, bins=90)
     
     # get the bin index for each dihedral
     bin_indexes = np.digitize(sorted_dihedrals, bin_edges)
