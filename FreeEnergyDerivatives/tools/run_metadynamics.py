@@ -27,6 +27,16 @@ from openmmplumed  import *
 platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-script', type=str, help='Plumed Input File')
+args = parser.parse_args()
+
+script = open(args.script, 'r').read()
+
+print ("Plumed Script")
+print (script)
+
 '''
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
@@ -51,12 +61,6 @@ solute_indexes = utils.collect_solute_indexes(modeller.topology)
     
 system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
-
-script = """
-phi: TORSION ATOMS=5,7,9,15
-psi: TORSION ATOMS=7,9,15,17
-metad: METAD ARG=phi,psi PACE=500 HEIGHT=1.2 SIGMA=0.35,0.35 FILE=HILLS BIASFACTOR=6.0 TEMP=298.15
-PRINT STRIDE=10 ARG=phi,psi,metad.bias FILE=COLVAR"""
 
 system.addForce(PlumedForce(script))
 
