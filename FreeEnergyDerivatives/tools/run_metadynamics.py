@@ -29,12 +29,14 @@ platform.setPropertyDefaultValue('Precision', 'mixed')
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('-pdb', type=str, help='PDB Structure File')
 parser.add_argument('-script', type=str, help='Plumed Input File')
+
 args = parser.parse_args()
 
 script = open(args.script, 'r').read()
 
-print ("Plumed Script")
+print ("--Plumed Script--")
 print (script)
 
 '''
@@ -42,7 +44,7 @@ print (script)
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
 
-ligand_pdb = PDBFile('alanine_dipeptide.pdb')
+ligand_pdb = PDBFile(args.pdb)
 
 forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
 
