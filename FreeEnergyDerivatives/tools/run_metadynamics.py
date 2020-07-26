@@ -68,11 +68,11 @@ simulation.minimizeEnergy()
 state = simulation.context.getState(getPositions=True)
 PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb", "w"))
 
-simulation.reporters.append(StateDataReporter('data.txt', 500, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
-simulation.reporters.append(NetCDFReporter('output.nc', 500))
+simulation.reporters.append(StateDataReporter('data.txt', 2000, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
+simulation.reporters.append(NetCDFReporter('output.nc', 2000))
 
 start = time()
-simulation.step(10000000)
+simulation.step(20000000)
 end = time()
 print (end - start)
 
