@@ -54,7 +54,7 @@ integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.
 
 script = """
 phi: TORSION ATOMS=5,7,9,15
-psi: TORSION ATOMS=17,15,9,7
+psi: TORSION ATOMS=7,9,15,17
 metad: METAD ARG=phi,psi PACE=500 HEIGHT=1.2 SIGMA=0.35,0.35 FILE=HILLS BIASFACTOR=6.0 TEMP=298.15
 PRINT STRIDE=10 ARG=phi,psi,metad.bias FILE=COLVAR"""
 
@@ -72,7 +72,7 @@ simulation.reporters.append(StateDataReporter('data.txt', 2000, step=True, poten
 simulation.reporters.append(NetCDFReporter('output.nc', 2000))
 
 start = time()
-simulation.step(20000000)
+simulation.step(15000000)
 end = time()
 print (end - start)
 
