@@ -55,7 +55,7 @@ integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.
 script = """
 phi: TORSION ATOMS=5,7,9,15
 psi: TORSION ATOMS=17,15,9,7
-metad: METAD ARG=phi,psi PACE=500 HEIGHT=1.2 SIGMA=0.35,0.35 FILE=HILLS BIASFACTOR=6.0 TEMP=300.0
+metad: METAD ARG=phi,psi PACE=500 HEIGHT=1.2 SIGMA=0.35,0.35 FILE=HILLS BIASFACTOR=6.0 TEMP=298.15
 PRINT STRIDE=10 ARG=phi,psi,metad.bias FILE=COLVAR"""
 
 system.addForce(PlumedForce(script))
