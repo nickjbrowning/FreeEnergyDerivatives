@@ -24,6 +24,8 @@ from lib import utils
 
 from openmmplumed  import *
 
+import argparse
+
 platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
