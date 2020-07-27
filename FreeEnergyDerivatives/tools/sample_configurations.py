@@ -70,7 +70,7 @@ system = forcefield.createSystem(modeller.topology, nonbondedMethod=PME,
 
 if (args.torsion_restraint_idx is not None):
     # add torsional restraints
-    torsion_restraint_idx = np.array(args.torsion_restraint_idx).reshape((np.int(len((args.torsion_restraint_idx) / 4)), 4))
+    torsion_restraint_idx = np.array(args.torsion_restraint_idx).reshape((np.int(len(args.torsion_restraint_idx) / 4), 4))
     
     for i in range(torsion_restraint_idx.shape[0]):
         iw, ix, iy, iz = torsion_restraint_idx[i]
