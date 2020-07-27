@@ -26,8 +26,8 @@ parser.add_argument('-nsample_steps', type=int, default=10000)  # 20ps using 2fs
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
 
 parser.add_argument('-torsion_restraint_idx', type=int, nargs='+', default=None, help='(N,4) array of torsional restraint atom indexes')
-parser.add_argument('-torsion_restraint_k', type=float, nargs='+', default=None, help='(N) array of torsional restraint k values')
-parser.add_argument('-torsion_restraint_theta0', type=float, nargs='+', default=None, help='(N) array of torsional restraint theta0 values')
+parser.add_argument('-torsion_restraint_k', type=float, nargs='+', default=None, help='(N) array of torsional restraint k values (kJ/mol)')
+parser.add_argument('-torsion_restraint_theta0', type=float, nargs='+', default=None, help='(N) array of torsional restraint theta0 values (rad)')
 
 args = parser.parse_args()
 
@@ -77,7 +77,7 @@ if (args.torsion_restraint_idx is not None):
         force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
         force.addPerTorsionParameter("k");
         force.addPerTorsionParameter("theta0");
-        force.addTorsion(iw, ix, iy, iz, [args.torsion_restraint_k[i], args.torsion_restraint_theta9[i]])
+        force.addTorsion(iw, ix, iy, iz, [args.torsion_restraint_k[i] * unit.kilojoule_per_mole, args.torsion_restraint_theta9[i] * unit.radian])
         force.setForceGroup(0)
     
 # system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
