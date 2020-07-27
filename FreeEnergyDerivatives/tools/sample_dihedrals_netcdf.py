@@ -72,7 +72,7 @@ for file in args.netcdf:
     
 dihedrals = np.concatenate(all_dihedrals)
 
-bins = np.linspace(-np.pi, np.pi, 90)
+bins = np.linspace(-np.pi, np.pi, 51)
 tiled_bins = np.tile(bins, (atom_indexes.shape[0], 1))
 
 print (tiled_bins)
