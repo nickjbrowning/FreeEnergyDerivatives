@@ -3,7 +3,6 @@ from simtk.openmm import *
 from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Modeller, PDBFile
-from mdtraj.reporters import NetCDFReporter  
 
 from openmmtools import alchemy
 import numpy as np

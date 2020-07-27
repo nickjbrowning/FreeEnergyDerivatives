@@ -3,7 +3,7 @@ from simtk.openmm import *
 from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Modeller, PDBFile
-from mdtraj.reporters import NetCDFReporter  
+from parmed.openmm.reporters import NetCDFReporter
 import netCDF4 as nc
 
 from openmmtools import alchemy
@@ -24,6 +24,11 @@ parser.add_argument('-solvate', type=bool, default=True)
 parser.add_argument('-nsamples', type=int, default=250)  
 parser.add_argument('-nsample_steps', type=int, default=10000)  # 20ps using 2fs timestep
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
+
+parser.add_argument('-torsion_restraint_idx', type=int, nargs='+', default=None, help='(N,4) array of torsional restraint atom indexes')
+parser.add_argument('-torsion_restraint_k', type=float, nargs='+', default=None, help='(N) array of torsional restraint k values (kJ/mol)')
+parser.add_argument('-torsion_restraint_theta0', type=float, nargs='+', default=None, help='(N) array of torsional restraint theta0 values (rad)')
+
 args = parser.parse_args()
 
 platform = openmm.Platform.getPlatformByName('CUDA')
@@ -33,15 +38,16 @@ platform.setPropertyDefaultValue('Precision', 'mixed')
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
-ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
 
-forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
-
-system_generator = SystemGenerator(
-    forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
-    small_molecule_forcefield='gaff-2.11',
-    molecules=[ligand_mol],
-    forcefield_kwargs=forcefield_kwargs)
+# ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
+# 
+# forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
+# 
+# system_generator = SystemGenerator(
+#     forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
+#     small_molecule_forcefield='gaff-2.11',
+#     molecules=[ligand_mol],
+#     forcefield_kwargs=forcefield_kwargs)
 
 ligand_pdb = PDBFile(args.pdb)
 
@@ -52,12 +58,30 @@ if (args.solute_indexes == None):
 else:
     solute_indexes = np.array(args.solute_indexes)
 
-print ("Solute Indexes:", solute_indexes)
-if (args.solvate):
-    modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
+forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
 
-system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
-        nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
+print ("Solute Indexes:", solute_indexes)
+
+if (args.solvate):
+    modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
+    
+system = forcefield.createSystem(modeller.topology, nonbondedMethod=PME,
+        nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds)
+
+if (args.torsion_restraint_idx is not None):
+    # add torsional restraints
+    torsion_restraint_idx = np.array(args.torsion_restraint_idx).reshape((np.int(len((args.torsion_restraint_idx) / 4)), 4))
+    
+    for i in range(torsion_restraint_idx.shape[0]):
+        iw, ix, iy, iz = torsion_restraint_idx[i]
+        force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
+        force.addPerTorsionParameter("k");
+        force.addPerTorsionParameter("theta0");
+        force.addTorsion(iw, ix, iy, iz, [args.torsion_restraint_k[i] * unit.kilojoule_per_mole, args.torsion_restraint_theta0[i] * unit.radian])
+        force.setForceGroup(0)
+    
+# system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
+#         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
     
 '''
 ---FINISHED SYSTEM PREPARATION---
