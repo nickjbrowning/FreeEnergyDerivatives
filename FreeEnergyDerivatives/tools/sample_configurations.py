@@ -24,6 +24,11 @@ parser.add_argument('-solvate', type=bool, default=True)
 parser.add_argument('-nsamples', type=int, default=250)  
 parser.add_argument('-nsample_steps', type=int, default=10000)  # 20ps using 2fs timestep
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
+
+parser.add_argument('-torsion_restraint_idx', type=int, nargs='+', default=None, help='(N,4) array of torsional restraint atom indexes')
+parser.add_argument('-torsion_restraint_k', type=float, nargs='+', default=None, help='(N) array of torsional restraint k values')
+parser.add_argument('-torsion_restraint_theta0', type=float, nargs='+', default=None, help='(N) array of torsional restraint theta0 values')
+
 args = parser.parse_args()
 
 platform = openmm.Platform.getPlatformByName('CUDA')
@@ -63,6 +68,18 @@ if (args.solvate):
 system = forcefield.createSystem(modeller.topology, nonbondedMethod=PME,
         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds)
 
+if (args.torsion_restraint_idx is not None):
+    # add torsional restraints
+    torsion_restraint_idx = np.array(args.torsion_restraint_idx).reshape((np.int(len((args.torsion_restraint_idx) / 4)), 4))
+    
+    for i in range(torsion_restraint_idx.shape[0]):
+        iw, ix, iy, iz = torsion_restraint_idx[i]
+        force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
+        force.addPerTorsionParameter("k");
+        force.addPerTorsionParameter("theta0");
+        force.addTorsion(iw, ix, iy, iz, [args.torsion_restraint_k[i], args.torsion_restraint_theta9[i]])
+        force.setForceGroup(0)
+    
 # system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
 #         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
     
