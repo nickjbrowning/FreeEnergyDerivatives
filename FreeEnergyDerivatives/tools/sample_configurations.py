@@ -77,7 +77,7 @@ if (args.torsion_restraint_idx is not None):
         force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
         force.addPerTorsionParameter("k");
         force.addPerTorsionParameter("theta0");
-        force.addTorsion(iw, ix, iy, iz, [args.torsion_restraint_k[i] * unit.kilojoule_per_mole, args.torsion_restraint_theta9[i] * unit.radian])
+        force.addTorsion(iw, ix, iy, iz, [args.torsion_restraint_k[i] * unit.kilojoule_per_mole, args.torsion_restraint_theta0[i] * unit.radian])
         force.setForceGroup(0)
     
 # system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
