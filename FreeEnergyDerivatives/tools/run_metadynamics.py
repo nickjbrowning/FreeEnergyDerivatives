@@ -3,7 +3,7 @@ from simtk.openmm import *
 from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Modeller, PDBFile
-from mdtraj.reporters import NetCDFReporter   
+from parmed.openmm.reporters import  NetCDFReporter
 from openmmtools import alchemy
 import numpy as np
 from time import time
@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-pdb', type=str, help='PDB Structure File')
 parser.add_argument('-script', type=str, help='Plumed Input File')
+parser.add_argument('-solvate', type=bool, default=True, help='solvate system yes/no')
 
 args = parser.parse_args()
 
@@ -50,7 +51,8 @@ forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
+if (args.solvate):
+    modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
 system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switchDistance=9.0 * unit.angstroms)
