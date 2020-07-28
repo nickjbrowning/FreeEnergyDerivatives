@@ -70,18 +70,27 @@ system = forcefield.createSystem(modeller.topology, nonbondedMethod=PME,
 
 if (args.torsion_restraint_idx is not None):
     # add torsional restraints
+    print ("Applying Torsional Restraints")
     torsion_restraint_idx = np.array(args.torsion_restraint_idx).reshape((np.int(len(args.torsion_restraint_idx) / 4), 4))
     
     for i in range(torsion_restraint_idx.shape[0]):
+        
         iw, ix, iy, iz = torsion_restraint_idx[i]
-        force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
-        force.addPerTorsionParameter("k");
-        force.addPerTorsionParameter("theta0");
+        
         k = args.torsion_restraint_k[i] * unit.kilojoule_per_mole
         theta0 = args.torsion_restraint_theta0[i] * unit.radian
         
-        force.addTorsion(int(iw), int(ix), int(iy), int(iz), [k, theta0])
+        print ("Torsion ", i, iw, ix, iy, iz, "k", k, "theta0", theta0)
+        
+        force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
+        force.addPerTorsionParameter("k", k);
+        force.addPerTorsionParameter("theta0", theta0);
+        
+        force.addTorsion(int(iw), int(ix), int(iy), int(iz))
+        
         force.setForceGroup(0)
+        
+        system.addForce(force)
     
 # system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
 #         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
