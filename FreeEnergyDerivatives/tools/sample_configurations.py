@@ -83,10 +83,10 @@ if (args.torsion_restraint_idx is not None):
         print ("Torsion ", i, iw, ix, iy, iz, "k", k, "theta0", theta0)
         
         force = openmm.CustomTorsionForce("0.5*k*min(dtheta, 2*pi-dtheta)^2; dtheta = abs(theta-theta0); pi = 3.1415926535")
-        force.addPerTorsionParameter("k", k);
-        force.addPerTorsionParameter("theta0", theta0);
+        force.addPerTorsionParameter("k");
+        force.addPerTorsionParameter("theta0");
         
-        force.addTorsion(int(iw), int(ix), int(iy), int(iz))
+        force.addTorsion(int(iw), int(ix), int(iy), int(iz), [k, theta0])
         
         force.setForceGroup(0)
         
