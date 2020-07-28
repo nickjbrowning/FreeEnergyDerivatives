@@ -26,6 +26,8 @@ def parse_netcdf(infile, atom_indexes):
     
     coordinates = ncin.variables['coordinates'][:]
     
+    print (coordinates.shape)
+    
     if (args.solute_indexes != None):
         solute_indexes = np.array(args.solute_indexes)
         coordinates = coordinates[:, solute_indexes, :]
