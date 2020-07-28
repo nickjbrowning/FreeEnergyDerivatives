@@ -86,7 +86,7 @@ bin_indexes = np.digitize(dihedrals, bins)
 if (args.plot):
     from matplotlib import pyplot as plt
     
-    plt.contour(H, levels=15)
+    plt.contourf(H, levels=15)
     
     plt.show()
 
