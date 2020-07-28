@@ -33,6 +33,16 @@ args = parser.parse_args()
 platform = openmm.Platform.getPlatformByName('CUDA')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
+print ("PDB: ", args.pdb)
+print ("SDF: ", args.sdf)
+print ("Freeze Atoms: ", args.freeze_atoms)
+print ("Compute Forces: ", args.compute_forces)
+print ("Solute Indexes: ", args.solute_indexes)
+print ("Nelectrostatic Points: ", args.nelectrostatic_points)
+print ("Nsteric Points: ", args.nsteric_points)
+print ("Nsamples: ", args.nsamples)
+print ("Nsample_steps: ", args.nsample_steps)
+print ("Fit Forcefield: ", args.fit_forcefield)
 '''
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
