@@ -20,14 +20,15 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-sdf', type=str)
 parser.add_argument('-pdb', type=str)
-parser.add_argument('-freeze_atoms', type=bool, default=False)
-parser.add_argument('-compute_forces', type=bool, default=False)
+parser.add_argument('-freeze_atoms', type=int, default=0, choices=[0, 1])
+parser.add_argument('-compute_forces', type=int, default=0, choices=[0, 1])
+parser.add_argument('-fit_forcefield', type=int, default=0, help='True if non-standard residue required.', choices=[0, 1])
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
 parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
-parser.add_argument('-fit_forcefield', type=bool, default=True, help='True if non-standard residue required.')
+
 args = parser.parse_args()
 
 platform = openmm.Platform.getPlatformByName('CUDA')
