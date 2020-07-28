@@ -27,6 +27,7 @@ parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
 parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
+parser.add_argument('-fit_ff', type=bool, default=True, help='True if non-standard residue required.')
 args = parser.parse_args()
 
 platform = openmm.Platform.getPlatformByName('CUDA')
@@ -36,23 +37,30 @@ platform.setPropertyDefaultValue('Precision', 'mixed')
 ---SYSTEM PREPARATION---
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
-ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
-
-forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
-
-system_generator = SystemGenerator(
-    forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
-    small_molecule_forcefield='gaff-2.11',
-    molecules=[ligand_mol],
-    forcefield_kwargs=forcefield_kwargs)
-
 ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-modeller.addSolvent(system_generator.forcefield, model='tip3p', padding=12.0 * unit.angstroms)
+if (args.fit_ff):
+   
+    ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
+    
+    forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
+    
+    system_generator = SystemGenerator(
+        forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
+        small_molecule_forcefield='gaff-2.11',
+        molecules=[ligand_mol],
+        forcefield_kwargs=forcefield_kwargs)
 
-system = system_generator.forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
+    forcefield = system_generator.forcefield
+    
+else:
+    forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
+    
+modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
+
+system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
     
 '''

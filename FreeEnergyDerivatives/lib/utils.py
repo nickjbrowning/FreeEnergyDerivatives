@@ -125,30 +125,8 @@ def display_netcdf(incdf):
                 
             print ("--")
 
-            
-def merge_netcdf(input_netcdfs, outnetcdf):
-    # TODO doesnt work atm
-    dst = nc.Dataset(outnetcdf, "w", format='NETCDF3_64BIT_OFFSET')
+
+def netcdf_to_xyz(netcdf, elements, base_file):
     
-    with nc.Dataset(input_netcdfs[0], "r") as src:
-        # copy attributes
-        for name in src.ncattrs():
-            dst.setncattr(name, src.getncattr(name))
-            
-        # copy dimensions except for atom
-        for name, dimension in src.dimensions.items():
-            dst.createDimension(name, size=(len(dimension) if not dimension.isunlimited() else None))
-                
-        for name, variable in src.variables.items():
-            x = dst.createVariable(name, variable.datatype, variable.dimensions)
-    
-            # copy varaible attributes
-            for attrname in variable.ncattrs():
-                dst.variables[name].setncattr(attrname, variable.getncattr(attrname))
-                
-    for ncdffile in input_netcdfs:
-        with nc.Dataset(ncdffile, "r") as src:
-            # copy all file data except for coordinates
-            for name, variable in src.variables.items():
-                if ("frame" in variable.dimensions):
-                    dst.variables[name][:] = np.concatenate((dst.variables[name][:], src.variables[name][:]))
+    ncin = nc.Dataset(incdf, "r") 
+   
