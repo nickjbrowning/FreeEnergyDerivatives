@@ -78,6 +78,8 @@ if (args.solute_indexes == None):
 else:
     solute_indexes = np.array(args.solute_indexes)
 
+print ("Solute Indexes: ", solute_indexes)
+
 # modify original NonBondedForce, and add aditional CustomForces to model alchemical interactions. 
 # force_groups is a dictionary containing the sets used for integration and computing dV/dl contributions.
 alchemical_system, force_groups = sp.create_alchemical_system(system, solute_indexes, compute_solvation_response=args.compute_forces)
