@@ -27,7 +27,7 @@ parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
 parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
-parser.add_argument('-fit_ff', type=bool, default=True, help='True if non-standard residue required.')
+parser.add_argument('-fit_forcefield', type=bool, default=True, help='True if non-standard residue required.')
 args = parser.parse_args()
 
 platform = openmm.Platform.getPlatformByName('CUDA')
@@ -41,7 +41,7 @@ ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-if (args.fit_ff):
+if (args.fit_forcefield):
    
     ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
     
