@@ -23,8 +23,8 @@ from pymbar import timeseries
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdf', type=str)
 parser.add_argument('-pdb', type=str)
-parser.add_argument('-freeze_atoms', type=bool, default=False)
-parser.add_argument('-compute_solvation_response', type=bool, default=False)
+parser.add_argument('-freeze_atoms', type=int, choices=[0, 1], default=0)
+parser.add_argument('-compute_solvation_response', type=int, choices=[0, 1], default=1)
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
 parser.add_argument('-lmbda', type=float, default=0.5)
 

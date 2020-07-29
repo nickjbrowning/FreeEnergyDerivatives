@@ -20,7 +20,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdf', type=str)
 parser.add_argument('-pdb', type=str)
-parser.add_argument('-solvate', type=bool, default=True)
+parser.add_argument('-solvate', type=int, default=1, choices=[0, 1])
+parser.add_argument('-fit_forcefield', type=int, default=1, choices=[0, 1])
 parser.add_argument('-nsamples', type=int, default=250)  
 parser.add_argument('-nsample_steps', type=int, default=10000)  # 20ps using 2fs timestep
 parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
@@ -39,26 +40,29 @@ platform.setPropertyDefaultValue('Precision', 'mixed')
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
 
-# ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
-# 
-# forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
-# 
-# system_generator = SystemGenerator(
-#     forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
-#     small_molecule_forcefield='gaff-2.11',
-#     molecules=[ligand_mol],
-#     forcefield_kwargs=forcefield_kwargs)
-
 ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
+
+if (args.fit_forcefield):
+    ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
+    
+    forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
+    
+    system_generator = SystemGenerator(
+       forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
+       small_molecule_forcefield='gaff-2.11',
+       molecules=[ligand_mol],
+       forcefield_kwargs=forcefield_kwargs)
+    
+    forcefield = system_generator.forcefield
+else:
+    forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
 
 if (args.solute_indexes == None):
     solute_indexes = utils.collect_solute_indexes(modeller.topology)
 else:
     solute_indexes = np.array(args.solute_indexes)
-
-forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
 
 print ("Solute Indexes:", solute_indexes)
 
