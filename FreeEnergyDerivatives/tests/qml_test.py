@@ -32,7 +32,7 @@ forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
-system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
+system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffNonPeriodic,
         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switchDistance=9.0 * unit.angstroms)
 
 solute_indexes = utils.collect_solute_indexes(modeller.topology)
