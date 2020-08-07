@@ -45,7 +45,7 @@ training_reps = np.fromfile('training_reps.bin')
 elements2charge = {'H': 1, 'C': 6, 'N': 7, 'O':8}
 charges = []
 for atom in modeller.topology.atoms():
-    charges.append(elements2charge[atom.element])
+    charges.append(elements2charge[atom.element.symbol])
 
 print (charges, solute_indexes)
 
