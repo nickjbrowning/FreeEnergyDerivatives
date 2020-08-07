@@ -54,7 +54,7 @@ qmlforce = QMLForce(charges, solute_indexes)
 qmlforce.setSigma(21.2)
 
 qmlforce.setTrainingReps(training_reps)
-qmlforce.setCoefficients(coefficients)
+qmlforce.setCoefficients(training_coefficients)
 qmlforce.setTrainingNumAtoms(training_atoms)
 qmlforce.setTrainingCharges(training_charges)
 
