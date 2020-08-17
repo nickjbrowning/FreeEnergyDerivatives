@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-pdb', type=str, help='PDB Structure File')
 parser.add_argument('-script', type=str, help='Plumed Input File')
-parser.add_argument('-solvate', type=bool, default=True, help='solvate system yes/no')
+parser.add_argument('-solvate', default=1, choices=[0, 1], help='solvate system 1 (true) or 0 (false)')
 
 args = parser.parse_args()
 
@@ -53,10 +53,13 @@ forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
+nbm = CutoffNonPeriodic
+
 if (args.solvate):
     modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
-
-system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
+    nbm = CutoffPeriodic
+    
+system = forcefield.createSystem(modeller.topology, nonbondedMethod=nbm,
         nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switchDistance=9.0 * unit.angstroms)
 
 solute_indexes = utils.collect_solute_indexes(modeller.topology)
@@ -65,7 +68,9 @@ solute_indexes = utils.collect_solute_indexes(modeller.topology)
 ---FINISHED SYSTEM PREPARATION---
 '''
     
-system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
+if (nbm is CutoffPeriodic):
+    system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
+    
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 
 system.addForce(PlumedForce(script))
