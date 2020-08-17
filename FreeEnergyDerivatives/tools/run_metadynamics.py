@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-pdb', type=str, help='PDB Structure File')
 parser.add_argument('-script', type=str, help='Plumed Input File')
-parser.add_argument('-solvate', default=1, choices=[0, 1], help='solvate system 1 (true) or 0 (false)')
+parser.add_argument('-solvate', default=1, choices=[0, 1], type=int, help='solvate system 1 (true) or 0 (false)')
 
 args = parser.parse_args()
 
