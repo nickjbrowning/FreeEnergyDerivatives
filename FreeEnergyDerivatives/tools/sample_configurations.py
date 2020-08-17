@@ -103,8 +103,10 @@ if (args.torsion_restraint_idx is not None):
 ---FINISHED SYSTEM PREPARATION---
 '''
 
-# Add a simple barostat for pressure control
-system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
+# Add a simple barostat for pressure control in periodic systems
+if (args.solvate):
+    system.addForce(MonteCarloBarostat(1 * unit.bar, 298.15 * unit.kelvin))
+    
 # Use a simple thermostat for T control
 integrator = LangevinIntegrator(298.15 * unit.kelvin, 1.0 / unit.picoseconds, 0.002 * unit.picoseconds)
 integrator.setConstraintTolerance(1.0E-08)
