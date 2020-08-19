@@ -80,16 +80,15 @@ print (charges, solute_indexes)
 
 qmlforce = QMLForce(charges, solute_indexes)
 
-qmlforce.setSigma(21.2)
-
 qmlforce.setTrainingReps(training_reps)
 qmlforce.setCoefficients(training_coefficients)
 qmlforce.setTrainingNumAtoms(training_atoms)
 qmlforce.setTrainingCharges(training_charges)
 
 qmlforce.setElements([1, 6, 7, 8])
+
 qmlforce.setNRs2(24)
-qmlforce.setNRs3(15)
+qmlforce.setNRs3(20)
 qmlforce.setNFourrier(1)
 qmlforce.setEta2(0.32)
 qmlforce.setEta3(2.7)

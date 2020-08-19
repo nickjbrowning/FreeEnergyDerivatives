@@ -53,7 +53,9 @@ ligand_pdb = PDBFile(args.pdb)
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
 
 if (args.fit_forcefield):
-   
+    
+    print ("Assigning partial charges etc...")
+    
     ligand_mol = Molecule.from_file(args.sdf, file_format='sdf')
     
     forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
@@ -68,7 +70,7 @@ if (args.fit_forcefield):
     
 else:
     forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
-    
+
 modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
 system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
@@ -141,6 +143,8 @@ electrostatics_grid = np.linspace(1.0, 0.0, args.nelectrostatic_points, dtype=np
 
 electrostatics_grid.tofile('electrostatics_grid.npy')
 
+# TODO CHECK THIS
+
 dV_electrostatics, dVe_derivatives = TI.collect_dvdl_values(simulation, electrostatics_grid, args.nsamples, args.nsample_steps,
                                                        solute_indexes, force_groups, 'lambda_electrostatics',
                                                        compute_forces_along_path=args.compute_forces)
@@ -152,7 +156,7 @@ print ("dG electrostatics:", dG_electrostatics)
 
 if (args.compute_forces):
     dVe_derivatives.tofile('dvdl_electrostatics_derivatives.npy')
-    dG_electrostatics_forces = -np.trapz(np.mean(dVe_derivatives, axis=1), x=electrostatics_grid[::-1], axis=0)
+    dG_electrostatics_forces = np.trapz(np.mean(dVe_derivatives, axis=1), x=electrostatics_grid[::-1], axis=0)
     print ("--dG electrostatic forces--")
     print (dG_electrostatics_forces)
 
@@ -171,7 +175,7 @@ print ("dG sterics:", dG_sterics)
 
 if (args.compute_forces):
     dVs_derivatives.tofile('dvdl_sterics_derivatives.npy')
-    dG_sterics_forces = -np.trapz(np.mean(dVs_derivatives, axis=1), x=sterics_grid[::-1], axis=0)
+    dG_sterics_forces = np.trapz(np.mean(dVs_derivatives, axis=1), x=sterics_grid[::-1], axis=0)
     print ("--dG steric forces--")
     print (dG_sterics_forces)
 
@@ -179,7 +183,7 @@ print ("Final dG:", dG_electrostatics + dG_sterics)
 
 if (args.compute_forces):
     print ("--dG Forces--")
-    print (dG_electrostatics_forces + dG_sterics_forces)
-    
-    (dG_electrostatics_forces + dG_sterics_forces).tofile('dG_forces.npy')
+    dG_forces = dG_electrostatics_forces + dG_sterics_forces
+    print (dG_forces)
+    dG_forces.tofile('dG_forces.npy')
 
