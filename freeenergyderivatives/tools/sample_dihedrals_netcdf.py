@@ -5,7 +5,7 @@ Code to uniformly sample configurations from the distributions of a set of dihed
 from netCDF4 import Dataset
 import argparse
 import numpy as np
-from lib import utils
+from freeenergyderivatives.lib import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-netcdf', type=str, default=None, nargs='+')

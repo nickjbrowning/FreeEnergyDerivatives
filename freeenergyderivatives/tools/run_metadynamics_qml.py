@@ -18,9 +18,8 @@ from openmmtools import forces
 
 from openmmtools.alchemy import  *
 
-from lib import solvation_potentials as sp
-
-from lib import utils
+from freeenergyderivatives.lib import solvation_potentials as sp
+from freeenergyderivatives.lib import utils
 
 from openmmplumed  import *
 from openmmqml import QMLForce

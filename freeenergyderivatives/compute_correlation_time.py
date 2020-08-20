@@ -10,8 +10,8 @@ import numpy as np
 from openforcefield.topology import Molecule, Topology
 from openmmforcefields.generators import SystemGenerator
 
-from lib import solvation_potentials as sp
-from lib import thermodynamic_integration as TI
+from freeenergyderivatives.lib import solvation_potentials as sp
+from freeenergyderivatives.lib import thermodynamic_integration as TI
 
 import argparse
 

@@ -18,9 +18,9 @@ from openmmtools import forces
 
 from openmmtools.alchemy import  *
 
-from lib import solvation_potentials as sp
+from freeenergyderivatives.lib import solvation_potentials as sp
 
-from lib import utils
+from freeenergyderivatives.lib import utils
 
 from openmmplumed  import *
 
@@ -87,7 +87,7 @@ simulation.reporters.append(StateDataReporter('data.txt', 1500, step=True, poten
 simulation.reporters.append(NetCDFReporter('output.nc', 1500))
 
 start = time()
-simulation.step(15000000)
+simulation.step(7500000)
 end = time()
 print (end - start)
 

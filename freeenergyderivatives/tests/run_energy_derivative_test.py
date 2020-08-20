@@ -18,7 +18,7 @@ from openmmtools import forces
 
 from openmmtools.alchemy import  *
 
-from lib import solvation_potentials as sp
+from freeenergyderivatives.lib import solvation_potentials as sp
 from openmmtools.testsystems import TestSystem
 
 

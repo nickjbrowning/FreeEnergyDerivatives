@@ -445,6 +445,207 @@ def _get_alchemical_response(system, reference_force, solute_indicies, disable_a
     
     return dall_custom_forces, groups
 
+
+def create_end_state_system(system, solute_indicies):
+    
+    new_system = copy.deepcopy(system)
+    
+    alchemical_atoms = set(solute_indicies)
+    
+    chemical_atoms = set(range(system.getNumParticles())).difference(alchemical_atoms)
+    
+    integration_group = []
+    
+    for force in new_system.getForces():
+        # group 0 will be used as integration group, so move all existing forces here
+        force.setForceGroup(0)
+        
+    integration_group.append(0)
+    
+    force_idx, reference_force = forces.find_forces(new_system, openmm.NonbondedForce, only_one=True)
+    
+    exceptions_sterics_energy_expression = '4.0*epsilon*x*(x-1.0); x = (sigma/r)^6;'
+    sterics_mixing_rules = 'sigma=0.5*(sigma1+sigma2); epsilon = sqrt(epsilon1*epsilon2);'
+    
+    epsilon_solvent = reference_force.getReactionFieldDielectric()
+    rcut = reference_force.getCutoffDistance()
+
+    k_rf = rcut ** (-3) * ((epsilon_solvent - 1) / (2 * epsilon_solvent + 1))
+    k_rf = k_rf.value_in_unit_system(unit.md_unit_system)  
+     
+    c_rf = rcut ** (-1) * ((3 * epsilon_solvent) / (2 * epsilon_solvent + 1))
+    c_rf = c_rf.value_in_unit_system(unit.md_unit_system)
+
+    exceptions_electrostatics_energy_expression = 'ONE_4PI_EPS0*chargeprod*(r^(-1) + k_rf*r^2 - c_rf);'
+    exceptions_electrostatics_energy_expression += 'ONE_4PI_EPS0 = %.16e;' % (ONE_4PI_EPS0)
+    exceptions_electrostatics_energy_expression += 'k_rf = {k_rf};c_rf = {c_rf};'.format(k_rf=k_rf, c_rf=c_rf)
+    electrostatics_mixing_rules = 'chargeprod = charge1*charge2;'
+    
+    sterics_energy_expression = exceptions_sterics_energy_expression + sterics_mixing_rules
+    electrostatics_energy_expression = exceptions_electrostatics_energy_expression + electrostatics_mixing_rules
+
+    nonbonded_force = copy.deepcopy(reference_force)
+    
+    na_electrostatics_custom_nonbonded_force = openmm.CustomNonbondedForce(electrostatics_energy_expression)
+    aa_electrostatics_custom_nonbonded_force = openmm.CustomNonbondedForce(electrostatics_energy_expression)
+    
+    na_electrostatics_custom_bond_force = openmm.CustomBondForce(exceptions_electrostatics_energy_expression)
+    aa_electrostatics_custom_bond_force = openmm.CustomBondForce(exceptions_electrostatics_energy_expression)
+    
+    na_sterics_custom_nonbonded_force = openmm.CustomNonbondedForce(sterics_energy_expression)
+    aa_sterics_custom_nonbonded_force = openmm.CustomNonbondedForce(sterics_energy_expression)
+   
+    # CustomBondForces represent exceptions not picked up by exclusions 
+    na_sterics_custom_bond_force = openmm.CustomBondForce(exceptions_sterics_energy_expression)
+    aa_sterics_custom_bond_force = openmm.CustomBondForce(exceptions_sterics_energy_expression)
+
+    all_electrostatics_custom_nonbonded_forces = [na_electrostatics_custom_nonbonded_force, aa_electrostatics_custom_nonbonded_force]
+    all_electrostatics_custom_bond_forces = [na_electrostatics_custom_bond_force, aa_electrostatics_custom_bond_force]
+    all_sterics_custom_nonbonded_forces = [na_sterics_custom_nonbonded_force, aa_sterics_custom_nonbonded_force]
+    all_sterics_custom_bond_forces = [na_sterics_custom_bond_force, aa_sterics_custom_bond_force]
+    
+    for force in all_sterics_custom_nonbonded_forces:
+        force.addPerParticleParameter("sigma")
+        force.addPerParticleParameter("epsilon") 
+        force.setUseSwitchingFunction(reference_force.getUseSwitchingFunction())
+        force.setCutoffDistance(reference_force.getCutoffDistance())
+        force.setSwitchingDistance(reference_force.getSwitchingDistance())
+        
+        force.setUseSwitchingFunction(False)
+        # force.setUseLongRangeCorrection(reference_force.getUseDispersionCorrection())
+    
+        force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
+        
+    for force in all_electrostatics_custom_nonbonded_forces:
+        force.addPerParticleParameter("charge")
+        force.setUseSwitchingFunction(False)
+        force.setCutoffDistance(reference_force.getCutoffDistance())
+        force.setUseLongRangeCorrection(False)  
+        force.setNonbondedMethod(openmm.CustomNonbondedForce.CutoffPeriodic)
+    
+    for force in all_sterics_custom_bond_forces:
+        force.addPerBondParameter("sigma")  
+        force.addPerBondParameter("epsilon")
+    
+    for force in all_electrostatics_custom_bond_forces:
+        force.addPerBondParameter("chargeprod")  # charge product
+        # force.addPerBondParameter("sigma") 
+    
+    # fix any missing values that can screw things up
+    for particle_index in range(reference_force.getNumParticles()):
+
+        [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
+        
+        if sigma == 0.0 * unit.angstrom:
+            warning_msg = 'particle %d has Lennard-Jones sigma = 0 (charge=%s, sigma=%s, epsilon=%s); setting sigma=1A'
+            logger.warning(warning_msg % (particle_index, str(charge), str(sigma), str(epsilon)))
+            sigma = 3.0 * unit.angstrom
+            nonbonded_force.setParticleParameters(particle_index, charge, sigma, epsilon)
+            
+    # also do the same for exceptions
+    for exception_index in range(reference_force.getNumExceptions()):
+  
+        [iatom, jatom, chargeprod, sigma, epsilon] = reference_force.getExceptionParameters(exception_index)
+
+        if sigma == 0.0 * unit.angstrom:
+            warning_msg = 'exception %d has Lennard-Jones sigma = 0 (iatom=%d, jatom=%d, chargeprod=%s, sigma=%s, epsilon=%s); setting sigma=1A'
+            logger.warning(warning_msg % (exception_index, iatom, jatom, str(chargeprod), str(sigma), str(epsilon)))
+            sigma = 3.0 * unit.angstrom
+            # Fix it.
+            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, chargeprod, sigma, epsilon)
+    
+    # add all particles to all custom forces...
+    for particle_index in range(reference_force.getNumParticles()):
+
+        [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
+        
+        for force in all_sterics_custom_nonbonded_forces:
+            force.addParticle([sigma, epsilon])
+      
+        for force in all_electrostatics_custom_nonbonded_forces:
+            force.addParticle([charge])
+
+    # now turn off interactions from alchemically-modified particles in unmodified nonbonded force
+    for particle_index in range(reference_force.getNumParticles()):
+
+        [charge, sigma, epsilon] = reference_force.getParticleParameters(particle_index)
+
+        if particle_index in solute_indicies:
+            nonbonded_force.setParticleParameters(particle_index, 0.0, sigma, 0.0)
+            
+    # Now restrict pairwise interactions to their respective groups
+    na_sterics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
+    aa_sterics_custom_nonbonded_force.addInteractionGroup(alchemical_atoms, alchemical_atoms)
+    
+    na_electrostatics_custom_nonbonded_force.addInteractionGroup(chemical_atoms, alchemical_atoms)
+    aa_electrostatics_custom_nonbonded_force.addInteractionGroup(alchemical_atoms, alchemical_atoms)
+    
+    # now lets handle exclusions and exceptions
+    all_custom_nonbonded_forces = all_electrostatics_custom_nonbonded_forces + all_sterics_custom_nonbonded_forces 
+    
+    for exception_index in range(reference_force.getNumExceptions()):
+    
+        iatom, jatom, chargeprod, sigma, epsilon = reference_force.getExceptionParameters(exception_index)
+    
+        # All non-bonded forces must have same number of exceptions/exclusions on CUDA
+        for force in all_custom_nonbonded_forces:
+            force.addExclusion(iatom, jatom)
+
+        is_exception_epsilon = abs(epsilon.value_in_unit_system(unit.md_unit_system)) > 0.0
+        is_exception_chargeprod = abs(chargeprod.value_in_unit_system(unit.md_unit_system)) > 0.0
+        
+        both_alchemical = iatom in alchemical_atoms and jatom in alchemical_atoms
+        at_least_one_alchemical = iatom in alchemical_atoms or jatom in alchemical_atoms
+        only_one_alchemical = at_least_one_alchemical and not both_alchemical
+        
+        # If exception (and not exclusion), add special CustomBondForce terms to handle alchemically modified LJ and reactionfield electrostatics
+        if both_alchemical:
+            if is_exception_epsilon:
+                aa_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
+            if is_exception_chargeprod:
+                aa_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
+
+        # When this is a single region we model the exception between alchemical
+        # and non-alchemical particles using a single custom bond.
+        
+        elif only_one_alchemical:
+            if is_exception_epsilon:
+                na_sterics_custom_bond_force.addBond(iatom, jatom, [sigma, epsilon])
+            if is_exception_chargeprod:
+                na_electrostatics_custom_bond_force.addBond(iatom, jatom, [chargeprod])
+        # else: both particles are non-alchemical, leave them in the unmodified NonbondedForce
+        
+        # remove this exception in original reference force
+        if at_least_one_alchemical:
+            nonbonded_force.setExceptionParameters(exception_index, iatom, jatom, 0.0, sigma, 0.0)
+    
+    all_custom_forces = (all_electrostatics_custom_nonbonded_forces + all_electrostatics_custom_bond_forces + all_sterics_custom_nonbonded_forces + all_sterics_custom_bond_forces)
+
+    all_na_forces = [na_electrostatics_custom_nonbonded_force, na_electrostatics_custom_bond_force, na_sterics_custom_nonbonded_force, na_sterics_custom_bond_force]
+    
+    names = ["na_electrostatics_nbf", "aa_electrostatics_nbf", "na_electrostatics_bf", "aa_electrostatics_bf",
+             "na_sterics_nbf", "aa_sterics_nbf", "na_sterics_bf", "aa_sterics_bf" ]
+    
+    interaction_forces = []
+    
+    for i, force in enumerate(all_custom_forces):
+        force.setForceGroup(i + 1)
+        integration_group.append(i + 1)
+        if (force in all_na_forces):
+            interaction_forces.append(i + 1)
+        new_system.addForce(force)
+        
+    groups = {'integration' : set(integration_group), 'interaction' : set(interaction_forces)}
+            
+    # remove the original non-bonded force
+    new_system.removeForce(force_idx)
+    
+    # add the new non-bonded force with alchemical interactions removed
+    nonbonded_force.setForceGroup(0)
+    new_system.addForce(nonbonded_force)
+    
+    return new_system, groups
+
         
 def decompose_energy(context, system, include_derivatives=True):
     
