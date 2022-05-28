@@ -12,25 +12,40 @@ from openmmforcefields.generators import SystemGenerator
 
 from freeenergyderivatives.lib import utils
 from freeenergyderivatives.lib import solvation_potentials as sp
-
+from rdkit.Chem import rdmolfiles as rdmol 
 import argparse
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('-sdf', type=str)
 parser.add_argument('-pdb', type=str)
 parser.add_argument('-nsamples', type=int, default=3000)
 parser.add_argument('-nsample_steps', type=int, default=500)
+parser.add_argument('-fit_forcefield', type=int, default=1, choices=[0, 1])
 
 args = parser.parse_args()
 
 platform = openmm.Platform.getPlatformByName('OpenCL')
 platform.setPropertyDefaultValue('Precision', 'mixed')
 
-ligand_pdb = PDBFile(args.pdb)
+rdkitmol = rdmol.MolFromMolFile(args.sdf, removeHs=False, sanitize=False)
+ligand = Molecule(rdkitmol)
 
-modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
+modeller = Modeller(ligand.to_topology().to_openmm(), ligand.conformers[0])
 
-forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
+if (args.fit_forcefield):
+    
+    forcefield_kwargs = {'constraints': app.HBonds, 'rigidWater': True, 'removeCMMotion': True, 'hydrogenMass': 4 * unit.amu }
+    
+    system_generator = SystemGenerator(
+       forcefields=['amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml'],
+       small_molecule_forcefield='gaff-2.11',
+       molecules=[ligand],
+       forcefield_kwargs=forcefield_kwargs)
+    
+    forcefield = system_generator.forcefield
+else:
+    forcefield = ForceField('amber/protein.ff14SB.xml', 'amber/tip3p_standard.xml', 'amber/tip3p_HFE_multivalent.xml')
 
 modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
@@ -67,7 +82,7 @@ state = simulation.context.getState(getPositions=True)
 PDBFile.writeFile(modeller.topology, state.getPositions(), file=open("equil.pdb", "w"))
 
 simulation.reporters.append(StateDataReporter('data.txt', args.nsample_steps, step=True, potentialEnergy=True, temperature=True, density=True , volume=True))
-simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
+# simulation.reporters.append(NetCDFReporter('output.nc', args.nsample_steps))
 
 avg_forces = np.zeros((len(solute_indexes), 3))
 avg_energy = 0.0
@@ -85,7 +100,7 @@ for i in range(args.nsamples):
     avg_energy += (1 / args.nsamples) * energy
 
 print ("-- CALCULATION DONE --")
-print ("-Hydration Enthapy (kj/mol):", avg_energy)
+print ("-Hydration Enthalpy (kj/mol):", avg_energy)
 print ("-Hydration Forces-")
 print (avg_forces)
 

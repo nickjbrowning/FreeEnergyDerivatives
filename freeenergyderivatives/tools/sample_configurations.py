@@ -40,6 +40,18 @@ platform.setPropertyDefaultValue('Precision', 'mixed')
     setup AM1-BCC charges for the solute, add solvent, set non-bonded method etc
 '''
 
+# read the ligand and add Hs
+rdkitmol = Chem.MolFromMolFile('ligand.mol')
+rdkitmolh = Chem.AddHs(rdkitmol, addCoords=True)
+ligand = Molecule(rdkitmolh)
+
+# read the protein
+protein = PDBFile('protein.pdb')
+
+# Use Modeller to combine the protein and ligand into a complex
+modeller = Modeller(protein.topology, protein.positions)
+modeller.add(ligand.to_topology().to_openmm(), ligand.conformers[0])
+
 ligand_pdb = PDBFile(args.pdb)
 
 modeller = Modeller(ligand_pdb.topology, ligand_pdb.positions)
