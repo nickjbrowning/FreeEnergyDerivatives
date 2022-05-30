@@ -28,6 +28,7 @@ parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
 parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
+parser.add_argument('-device', type=str, default='')
 
 args = parser.parse_args()
 

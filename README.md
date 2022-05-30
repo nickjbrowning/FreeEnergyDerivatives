@@ -84,10 +84,6 @@ parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs 
 
 The arguments `nelectrostatic_points` and `nsteric_points` determine the number of windows along each path for each decoupling phase. For each window along a thermodynamic path, `nsamples` are taken where each is simulated for `0.4ps` after being equilibrated for `100ps` as detailed earlier. The solute indices can be specified with ```solute_indices``` (useful for self-hydration energies). 
 
-## Implementational Details
-
-TODO
-
 
 ## Notes ##
 
