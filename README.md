@@ -111,7 +111,7 @@ platform = openmm.Platform.getPlatformByName('CPU')
 
 ## Citation ##
 
-If you use or derive from this work in a publication, please use the following citation,
+If you use or derive from this work in a publication please use the following citation,
 ```
 @misc{njb_fed,
   author = {Browning, N. J.},
