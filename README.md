@@ -109,3 +109,17 @@ to,
 platform = openmm.Platform.getPlatformByName('CPU')
 ```
 
+## Citation ##
+
+If you use or derive from this work in a publication, please use the following citation,
+```
+@misc{njb_fed,
+  author = {Browning, N. J.},
+  title = {FreeEnergyDerivatives},
+  year = {2022},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/nickjbrowning/FreeEnergyDerivatives}},
+  commit = {INSERT COMMIT HERE}
+}
+```
