@@ -88,7 +88,7 @@ The arguments `nelectrostatic_points` and `nsteric_points` determine the number 
 
 ## Notes ##
 
-This package includes an explicit implementation of the lambda derivatives of the non-bonded interactions, as the energy derivatives provided by openmm (test in version 7.5),
+This package includes an explicit implementation of the lambda derivatives of the non-bonded interactions, as the energy derivatives provided by openmm (as of version 7.5),
 
 ```python
 energy_derivs = state.getEnergyParameterDerivatives()
