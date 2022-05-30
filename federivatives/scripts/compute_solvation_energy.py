@@ -28,13 +28,13 @@ parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
 parser.add_argument('-nsample_steps', type=int, default=200)  # 0.4ps using 2fs timestep
-parser.add_argument('-device', type=str, default='')
+parser.add_argument('-device', type=str, default='CUDA')
 
 args = parser.parse_args()
 
-platform = openmm.Platform.getPlatformByName('CUDA')
+platform = openmm.Platform.getPlatformByName(args.device)
 platform.setPropertyDefaultValue('Precision', 'mixed')
-
+    
 print ("PDB: ", args.pdb)
 print ("SDF: ", args.sdf)
 print ("Freeze Atoms: ", args.freeze_atoms)
