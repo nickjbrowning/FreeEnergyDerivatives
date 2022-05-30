@@ -286,7 +286,7 @@ def create_alchemical_system(system, solute_indicies, compute_solvation_response
         integration_group.append(i + 1)
         new_system.addForce(force)
         
-    groups = {'integration' : set(integration_group)}
+    groups = {'integration': set(integration_group)}
     
     if (compute_solvation_response):
         
@@ -635,7 +635,7 @@ def create_end_state_system(system, solute_indicies):
             interaction_forces.append(i + 1)
         new_system.addForce(force)
         
-    groups = {'integration' : set(integration_group), 'interaction' : set(interaction_forces)}
+    groups = {'integration': set(integration_group), 'interaction': set(interaction_forces)}
             
     # remove the original non-bonded force
     new_system.removeForce(force_idx)

@@ -10,9 +10,9 @@ import numpy as np
 from openforcefield.topology import Molecule, Topology
 from openmmforcefields.generators import SystemGenerator
 
-from freeenergyderivatives.lib import solvation_potentials as sp
-from freeenergyderivatives.lib import thermodynamic_integration as TI
-from freeenergyderivatives.lib import utils
+from federivatives.lib import solvation_potentials as sp
+from federivatives.lib import thermodynamic_integration as TI
+from federivatives.lib import utils
 
 import argparse
 
@@ -23,7 +23,7 @@ parser.add_argument('-pdb', type=str)
 parser.add_argument('-freeze_atoms', type=int, default=0, choices=[0, 1])
 parser.add_argument('-compute_forces', type=int, default=0, choices=[0, 1])
 parser.add_argument('-fit_forcefield', type=int, default=0, help='True if non-standard residue simulated', choices=[0, 1])
-parser.add_argument('-solute_indexes', type=int, nargs='+', default=None)
+parser.add_argument('-solute_indices', type=int, nargs='+', default=None)
 parser.add_argument('-nelectrostatic_points', type=int, default=10)
 parser.add_argument('-nsteric_points', type=int, default=20)
 parser.add_argument('-nsamples', type=int, default=2500)  # 1ns 
@@ -74,7 +74,7 @@ else:
 modeller.addSolvent(forcefield, model='tip3p', padding=12.0 * unit.angstroms)
 
 system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffPeriodic,
-        nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds, switch_distance=9.0 * unit.angstroms)
+        nonbondedCutoff=10.0 * unit.angstroms, constraints=HBonds)
     
 '''
 ---FINISHED SYSTEM PREPARATION---
@@ -121,9 +121,11 @@ simulation.context.setPositions(modeller.positions)
 simulation.context.setParameter('lambda_electrostatics', 1.0)
 simulation.context.setParameter('lambda_sterics', 1.0)
 
+print ("Minimizing Energy")
 # fix any bad contacts etc
 simulation.minimizeEnergy()
 
+print ("Running Equilibration")
 # lets equilibrate the system for 0.5 ns first
 simulation.step(250000)
 
