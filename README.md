@@ -58,7 +58,7 @@ The script to compute the hydration free energy is located in federivatives/scri
 To use the code, simply type:
 
 ```python
-python3 compute_solvation_energy.py -pdb ethanol.pdb -sdf ethanol.sdf -fit_forcefield 1
+python3 /path/to/scripts/compute_solvation_energy.py -pdb ethanol.pdb -sdf ethanol.sdf -fit_forcefield 1
 ```
 For non-standard "residues" such as ethanol, both a pdb and sdf file is required due to the dependence on openmmforcefields and openforcefield. Currently only water is supported as the solvent, however this is fairly easy to change. 
 
