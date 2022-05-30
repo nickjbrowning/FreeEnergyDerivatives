@@ -92,11 +92,11 @@ def slice_netcdf(incdf, outcdf, atom_indexes, centre=True):
         for name, variable in src.variables.items():
             x = dst.createVariable(name, variable.datatype, variable.dimensions)
             if name == "coordinates":
-                min = np.min(src.variables[name][:, atom_indexes, : ], axis=1)
+                min = np.min(src.variables[name][:, atom_indexes,: ], axis=1)
                 if (centre):
-                    dst.variables[name][:] = src.variables[name][:, atom_indexes, : ] - min[:, np.newaxis, :]
+                    dst.variables[name][:] = src.variables[name][:, atom_indexes,: ] - min[:, np.newaxis,:]
                 else:
-                    dst.variables[name][:] = src.variables[name][:, atom_indexes, : ]
+                    dst.variables[name][:] = src.variables[name][:, atom_indexes,: ]
             else:
                 dst.variables[name][:] = src.variables[name][:]
             
@@ -124,9 +124,4 @@ def display_netcdf(incdf):
                 print (">>", name2, variable.getncattr(name2))
                 
             print ("--")
-
-
-def netcdf_to_xyz(netcdf, elements, base_file):
-    
-    ncin = nc.Dataset(incdf, "r") 
    
