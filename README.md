@@ -96,18 +96,6 @@ energy_derivs = state.getEnergyParameterDerivatives()
 
 can incorrectly partition the electrostatic derivative into both the lambda_sterics and lambda_electrostatics. The explicit derivatives implemented here are not used during the dynamics of the individual windows along the TI path, and only act as observer functions to calculate the correct energy derivatives.
 
-Note also that the code here defaults to simulations using CUDA. to force a CPU simulation, change the following lines,
-
-```
-platform = openmm.Platform.getPlatformByName('CUDA')
-platform.setPropertyDefaultValue('Precision', 'mixed')
-```
-
-to,
-
-```
-platform = openmm.Platform.getPlatformByName('CPU')
-```
 
 ## Citation ##
 
